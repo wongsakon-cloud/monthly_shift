@@ -218,8 +218,8 @@
                     <span class="text-base font-bold text-white" id="stat-total-staff">0</span>
                 </div>
                 <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5 text-center">
-                    <span class="text-base font-bold text-amber-400" id="stat-active-shifts">0</span>
                     <span class="text-[9px] text-blue-300 font-bold block uppercase leading-tight mb-1">กะงานรวม</span>
+                    <span class="text-base font-bold text-amber-400" id="stat-active-shifts">0</span>
                 </div>
                 <div onclick="showDutyDetailsModal('OT')" class="bg-white/5 hover:bg-red-500/15 border border-white/10 hover:border-red-500/30 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
                     <span class="text-[9px] text-blue-300 font-bold block uppercase leading-tight mb-1">โอที (OT) <i class="fa fa-info-circle text-[8px] text-red-400"></i></span>
@@ -481,7 +481,7 @@
     // Get First Name helper
     function getFirstName(fullName) {
         if (!fullName) return '';
-        const clean = fullName.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim();
+        const clean = fullName.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().chartAt ? fullName : fullName.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim();
         return clean.split(/\s+/)[0];
     }
 
@@ -624,9 +624,6 @@
                             selectedInsightStaffName = appData.staff[0].name;
                         }
                         setConnectionState('success');
-                        calculateInsights();
-                        renderInsightStaffCarousel();
-                        renderIndividualStats();
                     } else {
                         setConnectionState('db-error');
                     }
@@ -648,9 +645,6 @@
                             selectedInsightStaffName = appData.staff[0].name;
                         }
                         setConnectionState('success');
-                        calculateInsights();
-                        renderInsightStaffCarousel();
-                        renderIndividualStats();
                     } else {
                         setConnectionState('db-error');
                     }
@@ -663,14 +657,20 @@
         }
     }
 
-    // Insights Dashboard General Calculator
+    // สรุปข้อมูลภาพรวมประจำเดือนให้ผูกกับเดือนและปีที่เลือก (แก้ไขแล้ว)
     function calculateInsights() {
+        // ตรวจสอบจำนวนพนักงานทั้งหมดที่มีในระบบ
         document.getElementById('stat-total-staff').innerText = appData.staff.length;
+        
+        // ดึงปีและเดือนปัจจุบันที่ผู้ใช้เลือกจากตัวแปรสเตท currentDate
         const targetYear = currentDate.getFullYear();
         const targetMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
         const monthPrefix = `${targetYear}-${targetMonth}`;
+        
+        // กรองข้อมูล Roster เฉพาะเดือนและปีที่กำลังเลือกอยู่ขณะนั้น
         const currentMonthShifts = appData.roster.filter(r => r.date.startsWith(monthPrefix));
         
+        // อัปเดตสถิติลงบนการ์ด Insights
         document.getElementById('stat-active-shifts').innerText = currentMonthShifts.filter(r => ['W', 'PH', 'OT'].includes(r.type)).length;
         document.getElementById('stat-ot-shifts').innerText = currentMonthShifts.filter(r => r.type === "OT").length;
         document.getElementById('stat-ph-shifts').innerText = currentMonthShifts.filter(r => r.type === "PH").length;
@@ -826,7 +826,7 @@
         }
     }
 
-    // Open Duty details listing (OT/PH popup logic)
+    // รายชื่อผู้ปฏิบัติงาน OT/PH ใน Popup ให้เปลี่ยนตามเดือนที่เลือกด้วย (แก้ไขแล้ว)
     function showDutyDetailsModal(dutyType) {
         const modal = document.getElementById('dutyDetailsModal');
         const title = document.getElementById('duty-modal-title');
@@ -836,10 +836,12 @@
             ? '<i class="fa fa-business-time text-red-400"></i> รายชื่อผู้ปฏิบัติงานล่วงเวลา (OT)' 
             : '<i class="fa fa-calendar-day text-amber-400"></i> รายชื่อผู้ปฏิบัติงานวันหยุดนักขัตฤกษ์ (PH)';
 
+        // อิงตามปีและเดือนที่เลือกจากสเตทปัจจุบัน (currentDate)
         const year = currentDate.getFullYear();
         const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
         const monthPrefix = `${year}-${monthStr}`;
 
+        // กรองข้อมูลพนักงานที่ทำ OT หรือ PH ตามเดือนที่กดเลือก
         const list = appData.roster.filter(r => r.type === dutyType && r.date.startsWith(monthPrefix));
         list.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -1030,6 +1032,7 @@
 
         renderStaff(currentSelectedDay);
         renderInsightStaffCarousel();
+        calculateInsights(); // อัปเดตข้อมูลภาพรวมประจำเดือนให้ซิงค์ตามหน้าต่างปฏิทินในขณะนั้น
         renderIndividualStats();
     }
 
@@ -1168,6 +1171,7 @@
         modal.classList.add('flex');
     }
 
+    // Close Modal
     function closeModal() { 
         const modal = document.getElementById('staffModal');
         modal.classList.remove('flex');
