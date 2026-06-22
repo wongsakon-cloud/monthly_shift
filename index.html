@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKY UBP : Monthly Shift Schedule</title>
+    <!-- Tailwind CSS for Responsive UI Layouts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            light: '#f59e0b',
+                            dark: '#d97706',
+                        },
+                        holiday: '#fcd34d',
+                        danger: '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts for Thai & English Languages -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        /* Custom scrollbars configuration */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .selected-day {
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+        }
+        .day-box {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen py-6 px-4 md:px-6">
+
+<div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start justify-center w-full">
+    
+    <!-- COLUMN 1: Main Calendar View Card -->
+    <div class="w-full flex justify-center">
+        <div class="w-full max-w-[480px] lg:max-w-[500px] bg-white border border-slate-200 rounded-[32px] shadow-xl overflow-hidden transition-all duration-300">
+            <!-- App Identity Header -->
+            <div class="p-6 pb-2">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white font-bold">S</div>
+                        <span class="text-xs font-bold tracking-widest text-slate-400">SKY UBP SYSTEM</span>
+                    </div>
+                    <div class="text-xs text-slate-400 font-mono" id="live-clock">00:00:00</div>
+                </div>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
+                    Monthly Shift Schedule
+                </h1>
+                <p class="text-xs text-slate-400">ตารางจัดเวรและกะปฏิบัติงานประจำเดือน</p>
+            </div>
+
+            <!-- Database Connection Status -->
+            <div class="px-6 pb-4">
+                <div id="db-status" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-100">
+                    <i class="fa fa-spinner fa-spin"></i> กำลังเชื่อมต่อฐานข้อมูล...
+                </div>
+            </div>
+
+            <!-- Calendar Navigation Header -->
+            <div class="px-6 py-2">
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 sm:p-3 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+                    <div class="flex items-center justify-between w-full sm:w-auto gap-1">
+                        <button onclick="changeMonth(-1)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนก่อนหน้า">
+                            <i class="fa fa-chevron-left text-xs"></i>
+                        </button>
+                        
+                        <!-- Interactive Month & Year Selector Dropdowns -->
+                        <div class="flex gap-1 bg-white border border-slate-200 rounded-xl px-2.5 py-1 shadow-sm">
+                            <select id="select-month" onchange="onMonthYearSelectChange()" class="text-xs font-bold text-slate-800 bg-transparent border-none outline-none cursor-pointer py-1">
+                                <!-- Options generated in JS dynamically -->
+                            </select>
+                            <select id="select-year" onchange="onMonthYearSelectChange()" class="text-xs font-bold text-slate-800 bg-transparent border-none outline-none cursor-pointer py-1">
+                                <!-- Options generated in JS dynamically -->
+                            </select>
+                        </div>
+
+                        <button onclick="changeMonth(1)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนถัดไป">
+                            <i class="fa fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+
+                    <!-- Shift Shift Mode Switcher -->
+                    <button onclick="toggleShift()" id="shift-toggle-btn" class="flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold shadow-md transition-all">
+                        <i class="fa fa-sun" id="shift-icon"></i> Shift: <span id="shift-text">Day</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 7-Day Grid Calendar -->
+            <div class="px-6 py-4">
+                <div class="grid grid-cols-7 gap-1.5 mb-2 text-center">
+                    <span class="text-[10px] font-bold text-red-500">อา.</span>
+                    <span class="text-[10px] font-bold text-slate-500">จ.</span>
+                    <span class="text-[10px] font-bold text-slate-500">อ.</span>
+                    <span class="text-[10px] font-bold text-slate-500">พ.</span>
+                    <span class="text-[10px] font-bold text-slate-500">พฤ.</span>
+                    <span class="text-[10px] font-bold text-slate-500">ศ.</span>
+                    <span class="text-[10px] font-bold text-sky-500">ส.</span>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 min-h-[180px]">
+                    <!-- Rendered Dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMN 2: Daily Duty List -->
+    <div class="w-full flex justify-center lg:col-span-1">
+        <div class="w-full max-w-[480px] lg:max-w-[500px] bg-white border border-slate-200 rounded-[32px] shadow-xl overflow-hidden transition-all duration-300">
+            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">พนักงานปฏิบัติหน้าที่ประจำวันที่</p>
+                <h3 id="selected-date" class="text-sm font-bold text-slate-800">...</h3>
+            </div>
+            
+            <div class="px-6 py-4" id="staff-container">
+                <div id="loading-box" class="flex flex-col items-center justify-center py-10 gap-3 text-slate-400">
+                    <i class="fa fa-spinner fa-spin text-2xl text-amber-500"></i>
+                    <span class="text-xs font-semibold">กำลังประมวลผลข้อมูล...</span>
+                </div>
+                <div id="staff-list" class="space-y-2.5">
+                    <!-- Loaded Dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COLUMN 3: Roster Insights & Individual Analytics -->
+    <div class="w-full flex justify-center lg:col-span-2 xl:col-span-1">
+        <div class="w-full max-w-[480px] lg:max-w-[500px] bg-white border border-slate-200 rounded-[32px] p-6 shadow-xl transition-all duration-300 space-y-6">
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa fa-chart-pie text-amber-500"></i> สรุปข้อมูลภาพรวมประจำเดือน (Insights)
+            </h2>
+            
+            <!-- Symmetrical 4-Card Statistics Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-center">
+                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">พนักงาน</span>
+                    <span class="text-base font-bold text-slate-800" id="stat-total-staff">0</span>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-center">
+                    <span class="text-base font-bold text-amber-500" id="stat-active-shifts">0</span>
+                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">กะงานรวม</span>
+                </div>
+                <div onclick="showDutyDetailsModal('OT')" class="bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
+                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">โอที (OT) <i class="fa fa-info-circle text-[8px] text-red-500"></i></span>
+                    <span class="text-base font-bold text-red-500" id="stat-ot-shifts">0</span>
+                </div>
+                <div onclick="showDutyDetailsModal('PH')" class="bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
+                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">นักขัตฯ (PH) <i class="fa fa-info-circle text-[8px] text-amber-500"></i></span>
+                    <span class="text-base font-bold text-amber-500" id="stat-ph-shifts">0</span>
+                </div>
+            </div>
+
+            <!-- DAILY TEAM OVERVIEW CAROUSEL -->
+            <div class="bg-slate-50/60 border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <h3 class="text-xs font-bold tracking-widest text-center text-slate-500 uppercase mb-2">
+                    ทีมงานหลักประจำเดือน
+                </h3>
+                
+                <div class="relative w-full">
+                    <div id="insight-staff-carousel" class="flex flex-wrap justify-center gap-3 py-4">
+                        <!-- Loaded Dynamically -->
+                    </div>
+                </div>
+                <p class="text-[10px] text-center text-slate-500 mt-2">💡 คลิกที่พนักงานด้านบนเพื่อตรวจสอบประวัติและสถิติกะเดือนนี้</p>
+            </div>
+
+            <!-- INDIVIDUAL MONTHLY STATS DETAILS PANEL -->
+            <div id="individual-stats-card" class="bg-slate-50 border border-slate-200 rounded-2xl p-5 hidden transition-all duration-300">
+                
+                <!-- Clickable Profile Header to open staff modal details directly -->
+                <div onclick="openSelectedStaffModal()" class="flex items-center gap-3 mb-4 border-b border-slate-200 pb-3 cursor-pointer hover:bg-slate-100/70 p-2 -mx-2 rounded-2xl transition-all duration-200" title="คลิกดูประวัติและตารางงานเพิ่มเติม">
+                    <div id="ind-avatar-container" class="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center font-bold border-2 bg-slate-200 flex-shrink-0">
+                        <span id="ind-avatar-initials" class="absolute z-10 text-xs font-semibold"></span>
+                        <img id="ind-avatar-img" class="absolute inset-0 w-full h-full object-cover z-20" src="" alt="" onerror="this.style.display='none'">
+                    </div>
+                    <div class="flex-grow">
+                        <h4 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                            <span id="ind-staff-name">...</span>
+                            <i class="fa fa-chevron-right text-[10px] text-slate-400"></i>
+                        </h4>
+                        <p id="ind-staff-dept" class="text-[10px] text-slate-500">...</p>
+                    </div>
+                </div>
+
+                <!-- Metrics Indicators -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-center">
+                    <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-emerald-600 block uppercase mb-1">งานปกติ (W)</span>
+                        <span id="ind-w-days" class="text-lg font-bold text-slate-800">0</span>
+                        <span class="text-[9px] text-slate-500 block">วัน</span>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-red-500 block uppercase mb-1">โอที (OT)</span>
+                        <span id="ind-ot-days" class="text-lg font-bold text-slate-800">0</span>
+                        <span class="text-[9px] text-slate-500 block">วัน</span>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-amber-500 block uppercase mb-1">นักขัตฯ (PH)</span>
+                        <span id="ind-ph-days" class="text-lg font-bold text-slate-800">0</span>
+                        <span class="text-[9px] text-slate-500 block">วัน</span>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-amber-600 block uppercase mb-1">รวมวันทำงาน</span>
+                        <span id="ind-total-days" class="text-lg font-bold text-amber-600">0</span>
+                        <span class="text-[9px] text-slate-500 block">วัน/เดือน</span>
+                    </div>
+                </div>
+
+                <!-- Shifts breakdown -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs shadow-sm">
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase mb-2">สัดส่วนกะ (Shifts)</span>
+                        <div class="flex justify-between items-center text-[11px] mb-1">
+                            <span class="text-slate-600"><i class="fa fa-sun text-amber-500 mr-1"></i>กะเช้า (Day):</span>
+                            <span id="ind-day-shifts" class="font-bold text-slate-700">0 วัน</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px]">
+                            <span class="text-slate-600"><i class="fa fa-moon text-indigo-500 mr-1"></i>กะดึก (Night):</span>
+                            <span id="ind-night-shifts" class="font-bold text-slate-700">0 วัน</span>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs flex flex-col justify-between shadow-sm">
+                        <span class="text-[10px] text-slate-500 font-bold block uppercase mb-1">วันหยุด (OFF)</span>
+                        <div class="flex justify-between items-end mt-2">
+                            <span class="text-[11px] text-slate-500">พักผ่อนทั้งหมด:</span>
+                            <span class="text-lg font-bold text-emerald-500"><span id="ind-off-days">0</span> <span class="text-[10px] font-normal text-slate-400">วัน</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini Timeline List -->
+                <div>
+                    <h5 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2">ปฏิทินกะเดือนนี้ (Shift Timeline)</h5>
+                    <div id="ind-schedule-list" class="max-h-[120px] overflow-y-auto space-y-1.5 pr-1 font-sans">
+                        <!-- Loaded Dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SPECIAL MODAL: OT/PH Duty Assigned Staff List -->
+<div id="dutyDetailsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1100] hidden items-center justify-center p-4" onclick="closeDutyDetailsModal()">
+    <div class="bg-white border border-slate-200 p-6 rounded-[32px] w-full max-w-[420px] shadow-2xl relative transition-all duration-300 transform scale-95" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-200">
+            <h3 id="duty-modal-title" class="text-sm font-bold text-slate-800 flex items-center gap-2">...</h3>
+            <button onclick="closeDutyDetailsModal()" class="text-slate-400 hover:text-slate-600 transition text-lg"><i class="fa fa-times"></i></button>
+        </div>
+        <div id="duty-modal-content" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- MAIN STAFF MODAL -->
+<div id="staffModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1000] hidden items-center justify-center p-4" onclick="closeModal()">
+    <div class="bg-white border border-slate-200 p-6 md:p-8 rounded-[32px] w-full max-w-[420px] shadow-2xl relative transition-all duration-300 transform scale-95" onclick="event.stopPropagation()">
+        
+        <!-- Header Profile Info -->
+        <div class="text-center pb-4 border-b border-slate-200">
+            <div id="modal-avatar-container" class="relative w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center font-bold text-2xl border-2 bg-slate-100 transition">
+                <span id="modal-avatar-initials" class="absolute z-10 text-slate-500"></span>
+                <img id="modal-avatar-img" class="absolute inset-0 w-full h-full object-cover z-20" src="" alt="Profile Image" onerror="this.style.display='none'">
+            </div>
+            <h3 id="modal-name" class="text-base font-bold text-slate-800 mb-0.5">...</h3>
+            <span id="modal-dept" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-[10px] text-slate-500 font-semibold inline-block">...</span>
+        </div>
+
+        <!-- Tab Switches Header -->
+        <div class="flex border-b border-slate-200 mb-4 mt-3 text-xs font-bold">
+            <button id="tab-btn-calendar" onclick="setModalTab('calendar')" class="flex-1 pb-2 text-center text-amber-500 border-b-2 border-amber-500 transition-colors">ปฏิทินปฏิบัติงาน</button>
+            <button id="tab-btn-info" onclick="setModalTab('info')" class="flex-1 pb-2 text-center text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors">ประวัติส่วนตัว</button>
+        </div>
+
+        <!-- TAB 1: CALENDAR VIEW inside modal with month/year switching -->
+        <div id="modal-tab-calendar" class="space-y-3">
+            <div class="flex justify-between items-center bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                
+                <!-- Interactive Month Selector inside Staff Modal -->
+                <div class="flex items-center gap-1">
+                    <button onclick="changeModalMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนก่อนหน้า">
+                        <i class="fa fa-chevron-left text-[10px]"></i>
+                    </button>
+                    <div class="flex gap-0.5 bg-white border border-slate-200 rounded-lg px-2 py-0.5 shadow-sm">
+                        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="text-[11px] font-bold text-slate-700 bg-transparent border-none outline-none cursor-pointer py-0.5">
+                            <!-- Populated dynamically -->
+                        </select>
+                        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="text-[11px] font-bold text-slate-700 bg-transparent border-none outline-none cursor-pointer py-0.5">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <button onclick="changeModalMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนถัดไป">
+                        <i class="fa fa-chevron-right text-[10px]"></i>
+                    </button>
+                </div>
+
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200">DUTY PLAN</span>
+            </div>
+
+            <!-- Mini 7-Day Grid Headers -->
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500">
+                <span class="text-red-500">อา.</span>
+                <span>จ.</span>
+                <span>อ.</span>
+                <span>พ.</span>
+                <span>พฤ.</span>
+                <span>ศ.</span>
+                <span class="text-sky-500">ส.</span>
+            </div>
+
+            <!-- Mini Calendar Roster Days Grid -->
+            <div id="modal-calendar-grid" class="grid grid-cols-7 gap-1 text-center">
+                <!-- Loaded dynamically -->
+            </div>
+
+            <!-- Legend Indicators inside Modal -->
+            <div class="flex justify-center gap-3 text-[9px] font-bold pt-2.5 text-slate-500 border-t border-slate-200 flex-wrap">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> ปกติ (W)</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> โอที (OT)</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> นักขัตฯ (PH)</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-600"></span> ขอหยุด (B)</span>
+            </div>
+        </div>
+
+        <!-- TAB 2: STAFF CONTACT DETAILS VIEW -->
+        <div id="modal-tab-info" class="space-y-3 hidden text-xs">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span class="text-slate-500 font-semibold uppercase tracking-wider">รหัสพนักงาน</span>
+                <span id="modal-id" class="font-mono font-bold text-slate-800">...</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span class="text-slate-500 font-semibold uppercase tracking-wider">English Name</span>
+                <span id="modal-en" class="font-bold text-slate-800">...</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span class="text-slate-500 font-semibold uppercase tracking-wider">อีเมลบริษัท</span>
+                <a id="modal-email-href" href="" class="text-amber-600 hover:underline font-semibold">...</a>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span class="text-slate-500 font-semibold uppercase tracking-wider">เบอร์โทรศัพท์ทีม</span>
+                <span id="modal-phone" class="font-semibold text-slate-800">...</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span class="text-slate-500 font-semibold uppercase tracking-wider">เบอร์โทรส่วนตัว</span>
+                <span id="modal-personal-phone" class="font-semibold text-slate-800">...</span>
+            </div>
+        </div>
+
+        <!-- Close Button -->
+        <div class="pt-5 flex gap-2">
+            <button onclick="closeModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 py-3 rounded-xl font-bold transition text-xs">
+                ปิดหน้าต่าง
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ** การตั้งค่าการเชื่อมต่อ API ไปยัง Google Apps Script **
+    // ระบุ URL ของ Web App ที่ได้จาก Google Apps Script (ตอน Deploy เป็น Web App) ลงในตัวแปรนี้
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/xxxxxxxxxxxxxxx/exec";
+
+    // State Variables
+    let today = new Date();
+    let isNightShift = false;
+    let currentDate = new Date(today.getFullYear(), today.getMonth(), 1); 
+    let currentSelectedDay = today.getDate();
+    let appData = { holidays: [], staff: [], roster: [] };
+    let selectedInsightStaffName = null;
+    let activeModalStaff = null; 
+
+    const thaiMonths = [
+        'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+        'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+    ];
+
+    // Real-time clock simulator
+    function startClock() {
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('th-TH');
+        }, 1000);
+    }
+
+    // Function to calculate and format date
+    function formatDateString(year, month, day) {
+        const m = String(month).padStart(2, '0');
+        const d = String(day).padStart(2, '0');
+        return `${year}-${m}-${d}`;
+    }
+
+    // Check if there is any Booked Day Off (B)
+    function hasBookedDayOff(day) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const dateStr = formatDateString(year, month, day);
+        const shiftMode = isNightShift ? "Night" : "Day";
+        return appData.roster.some(r => r.date === dateStr && r.type === "B" && r.shift === shiftMode);
+    }
+
+    // Get First Name helper
+    function getFirstName(fullName) {
+        if (!fullName) return '';
+        const clean = fullName.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim();
+        return clean.split(/\s+/)[0];
+    }
+
+    // Dynamic Dropdown Generation & Syncing
+    function populateSelectOptions() {
+        const selectMonth = document.getElementById('select-month');
+        const selectYear = document.getElementById('select-year');
+        const modalSelectMonth = document.getElementById('modal-select-month');
+        const modalSelectYear = document.getElementById('modal-select-year');
+        
+        if (!selectMonth || !selectYear || !modalSelectMonth || !modalSelectYear) return;
+
+        selectMonth.innerHTML = '';
+        selectYear.innerHTML = '';
+        modalSelectMonth.innerHTML = '';
+        modalSelectYear.innerHTML = '';
+        
+        // Populate months option
+        thaiMonths.forEach((m, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.innerText = m;
+            selectMonth.appendChild(opt.cloneNode(true));
+            modalSelectMonth.appendChild(opt);
+        });
+        
+        // Populate years option (-5 years to +5 years in BE)
+        const currentY = today.getFullYear();
+        for (let y = currentY - 5; y <= currentY + 5; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.innerText = `พ.ศ. ${y + 543}`;
+            selectYear.appendChild(opt.cloneNode(true));
+            modalSelectYear.appendChild(opt);
+        }
+    }
+
+    function syncDropdowns() {
+        const selectMonth = document.getElementById('select-month');
+        const selectYear = document.getElementById('select-year');
+        const modalSelectMonth = document.getElementById('modal-select-month');
+        const modalSelectYear = document.getElementById('modal-select-year');
+        
+        const m = currentDate.getMonth();
+        const y = currentDate.getFullYear();
+
+        if (selectMonth) selectMonth.value = m;
+        if (selectYear) selectYear.value = y;
+        if (modalSelectMonth) modalSelectMonth.value = m;
+        if (modalSelectYear) modalSelectYear.value = y;
+    }
+
+    function onMonthYearSelectChange() {
+        const monthSelect = document.getElementById('select-month');
+        const yearSelect = document.getElementById('select-year');
+        if (!monthSelect || !yearSelect) return;
+
+        currentDate.setMonth(parseInt(monthSelect.value));
+        currentDate.setFullYear(parseInt(yearSelect.value));
+        
+        currentSelectedDay = 1;
+        if (currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth()) {
+            currentSelectedDay = today.getDate();
+        }
+        
+        renderCalendar();
+        if (activeModalStaff) {
+            renderModalCalendarGrid(activeModalStaff);
+        }
+    }
+
+    function onModalMonthYearSelectChange() {
+        const monthSelect = document.getElementById('modal-select-month');
+        const yearSelect = document.getElementById('modal-select-year');
+        if (!monthSelect || !yearSelect) return;
+
+        currentDate.setMonth(parseInt(monthSelect.value));
+        currentDate.setFullYear(parseInt(yearSelect.value));
+        
+        renderCalendar();
+        if (activeModalStaff) {
+            renderModalCalendarGrid(activeModalStaff);
+        }
+    }
+
+    // Connect state switcher
+    function setConnectionState(state) {
+        const statusEl = document.getElementById('db-status');
+        const loadingBox = document.getElementById('loading-box');
+        const staffList = document.getElementById('staff-list');
+        const calendarGrid = document.getElementById('calendar-grid');
+
+        if (state === 'success') {
+            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600 border border-green-200';
+            statusEl.innerHTML = '<i class="fa fa-check-circle"></i> เชื่อมต่อข้อมูลสำเร็จ';
+            loadingBox.style.display = 'none';
+            calendarGrid.style.opacity = '1';
+            calendarGrid.style.pointerEvents = 'auto';
+            renderCalendar();
+        } 
+        else if (state === 'db-error') {
+            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-200';
+            statusEl.innerHTML = '<i class="fa fa-database"></i> ข้อผิดพลาดของฐานข้อมูล';
+            calendarGrid.style.opacity = '0.3';
+            calendarGrid.style.pointerEvents = 'none';
+            staffList.innerHTML = `<div class="text-center py-8 text-red-500 font-bold"><i class="fa fa-exclamation-triangle block text-2xl mb-2"></i>🚨 ไม่พบหน้าชีตข้อมูลหลัก:<br><span class="text-xs font-normal text-slate-500">โปรดตรวจสอบชื่อชีต "รายชื่อพนักงาน" หรือสิทธิ์การแชร์</span></div>`;
+        } 
+        else if (state === 'offline') {
+            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200';
+            statusEl.innerHTML = '<i class="fa fa-wifi"></i> เครือข่ายออฟไลน์';
+            calendarGrid.style.opacity = '0.3';
+            calendarGrid.style.pointerEvents = 'none';
+            staffList.innerHTML = `<div class="text-center py-8 text-amber-500 font-bold"><i class="fa fa-wifi-slash block text-2xl mb-2"></i>🚨 ขัดข้องชั่วคราว:<br><span class="text-xs font-normal text-slate-500">การเชื่อมต่อขาดหาย กำลังพยายามใหม่อีกครั้ง...</span></div>`;
+        }
+    }
+
+    // Core Init Data Function
+    function initData() {
+        populateSelectOptions();
+        startClock();
+        const loadingBox = document.getElementById('loading-box');
+        
+        // ตรวจจับว่ารันบน Google Apps Script หรือบนภายนอก (เช่น GitHub Pages)
+        if (typeof google === 'undefined' || !google.script || !google.script.run) {
+            console.log("Detecting execution environment: External (GitHub Pages)");
+            
+            // ใช้ Web App API เพื่อดึงข้อมูลข้ามโดเมน
+            fetch(`${GAS_WEB_APP_URL}?action=getPayload`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    loadingBox.style.display = 'none';
+                    if (response && !response.error) {
+                        appData = response;
+                        if (appData.staff && appData.staff.length > 0) {
+                            selectedInsightStaffName = appData.staff[0].name;
+                        }
+                        setConnectionState('success');
+                        calculateInsights();
+                        renderInsightStaffCarousel();
+                        renderIndividualStats();
+                    } else {
+                        setConnectionState('db-error');
+                    }
+                })
+                .catch(error => {
+                    console.error("API Fetch Error:", error);
+                    loadingBox.style.display = 'none';
+                    setConnectionState('offline');
+                });
+        } else {
+            console.log("Detecting execution environment: Google Apps Script Workspace");
+            // เรียกผ่านระบบภายใน Google Workspace
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    loadingBox.style.display = 'none';
+                    if (response && !response.error) {
+                        appData = response;
+                        if (appData.staff && appData.staff.length > 0) {
+                            selectedInsightStaffName = appData.staff[0].name;
+                        }
+                        setConnectionState('success');
+                        calculateInsights();
+                        renderInsightStaffCarousel();
+                        renderIndividualStats();
+                    } else {
+                        setConnectionState('db-error');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    loadingBox.style.display = 'none';
+                    setConnectionState('offline');
+                })
+                .getInitialPayload();
+        }
+    }
+
+    // Insights Dashboard General Calculator
+    function calculateInsights() {
+        document.getElementById('stat-total-staff').innerText = appData.staff.length;
+        const targetYear = currentDate.getFullYear();
+        const targetMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const monthPrefix = `${targetYear}-${targetMonth}`;
+        const currentMonthShifts = appData.roster.filter(r => r.date.startsWith(monthPrefix));
+        
+        document.getElementById('stat-active-shifts').innerText = currentMonthShifts.filter(r => ['W', 'PH', 'OT'].includes(r.type)).length;
+        document.getElementById('stat-ot-shifts').innerText = currentMonthShifts.filter(r => r.type === "OT").length;
+        document.getElementById('stat-ph-shifts').innerText = currentMonthShifts.filter(r => r.type === "PH").length;
+    }
+
+    // Render Premium Carousel of Staff Profiles
+    function renderInsightStaffCarousel() {
+        const container = document.getElementById('insight-staff-carousel');
+        if (!container) return;
+        container.innerHTML = '';
+
+        appData.staff.forEach(s => {
+            const isSelected = selectedInsightStaffName === s.name;
+            const item = document.createElement('div');
+            
+            item.className = `flex flex-col items-center gap-1.5 cursor-pointer transition-all duration-300 flex-shrink-0 w-14 select-none ${
+                isSelected ? 'scale-105 opacity-100' : 'opacity-75 hover:opacity-100 hover:scale-105'
+            }`;
+
+            const initials = s.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
+            const imgHtml = s.img 
+                ? `<img class="absolute inset-0 w-full h-full object-cover z-20 rounded-full" src="${s.img}" alt="${s.name}">` 
+                : '';
+            
+            const borderRing = isSelected 
+                ? 'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]' 
+                : 'border-transparent';
+
+            item.onclick = () => {
+                selectedInsightStaffName = s.name;
+                renderInsightStaffCarousel();
+                renderIndividualStats();
+            };
+
+            item.innerHTML = `
+                <div class="relative w-12 h-12 rounded-full flex items-center justify-center font-bold border-2 bg-slate-100 ${borderRing} transition-all duration-200">
+                    <span class="absolute z-10 text-xs text-slate-500">${initials}</span>
+                    ${imgHtml}
+                </div>
+                <span class="text-[10px] text-center truncate w-full leading-tight font-medium ${
+                    isSelected ? 'text-amber-600 font-bold' : 'text-slate-500'
+                }">
+                    ${getFirstName(s.name)}
+                </span>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    // Calculate and render individual stats
+    function renderIndividualStats() {
+        const staffObj = appData.staff.find(s => s.name === selectedInsightStaffName);
+        const cardContainer = document.getElementById('individual-stats-card');
+        
+        if (!staffObj) {
+            cardContainer.classList.add('hidden');
+            return;
+        }
+
+        const year = currentDate.getFullYear();
+        const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const monthPrefix = `${year}-${monthStr}`;
+
+        const monthlyEntries = appData.roster.filter(r => r.name === selectedInsightStaffName && r.date.startsWith(monthPrefix));
+
+        const wCount = monthlyEntries.filter(r => r.type === 'W').length;
+        const otCount = monthlyEntries.filter(r => r.type === 'OT').length;
+        const phCount = monthlyEntries.filter(r => r.type === 'PH').length;
+        const totalDuty = wCount + otCount + phCount;
+
+        const daysInMonth = new Date(year, currentDate.getMonth() + 1, 0).getDate();
+        const offCount = daysInMonth - totalDuty;
+
+        const dayShifts = monthlyEntries.filter(r => r.shift === 'Day' && ['W', 'OT', 'PH'].includes(r.type)).length;
+        const nightShifts = monthlyEntries.filter(r => r.shift === 'Night' && ['W', 'OT', 'PH'].includes(r.type)).length;
+
+        document.getElementById('ind-staff-name').innerText = staffObj.name;
+        document.getElementById('ind-staff-dept').innerText = staffObj.dept || 'Service Operations Team';
+        document.getElementById('ind-w-days').innerText = wCount;
+        document.getElementById('ind-ot-days').innerText = otCount;
+        document.getElementById('ind-ph-days').innerText = phCount;
+        document.getElementById('ind-total-days').innerText = totalDuty;
+        document.getElementById('ind-day-shifts').innerText = `${dayShifts} วัน`;
+        document.getElementById('ind-night-shifts').innerText = `${nightShifts} วัน`;
+        document.getElementById('ind-off-days').innerText = offCount;
+
+        const indInitials = document.getElementById('ind-avatar-initials');
+        const indImg = document.getElementById('ind-avatar-img');
+        
+        indInitials.innerText = staffObj.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
+        indInitials.style.color = '#888';
+
+        if (staffObj.img) {
+            indImg.src = staffObj.img;
+            indImg.style.display = 'block';
+        } else {
+            indImg.style.display = 'none';
+        }
+
+        const scheduleListContainer = document.getElementById('ind-schedule-list');
+        scheduleListContainer.innerHTML = '';
+
+        if (monthlyEntries.length === 0) {
+            scheduleListContainer.innerHTML = `<p class="text-[10px] text-slate-400 italic py-2 text-center">ไม่มีข้อมูลเวรปฏิบัติหน้าที่ในเดือนนี้</p>`;
+        } else {
+            monthlyEntries.sort((a, b) => a.date.localeCompare(b.date));
+            monthlyEntries.forEach(entry => {
+                const dateObj = new Date(entry.date);
+                const localDateStr = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                
+                let badgeColor = '';
+                let typeLabel = '';
+                if (entry.type === 'W') {
+                    badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    typeLabel = 'เวรปกติ';
+                } else if (entry.type === 'OT') {
+                    badgeColor = 'bg-red-50 text-red-700 border-red-200';
+                    typeLabel = 'โอที';
+                } else if (entry.type === 'PH') {
+                    badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                    typeLabel = 'วันเทศกาล';
+                } else if (entry.type === 'B') {
+                    badgeColor = 'bg-slate-100 text-slate-700 border-slate-300';
+                    typeLabel = 'ขอวันหยุด';
+                }
+
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between text-[11px] p-2 rounded-lg bg-white border border-slate-100 shadow-sm";
+                row.innerHTML = `
+                    <span class="font-semibold text-slate-800">${localDateStr}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                            entry.shift === 'Day' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
+                        }">
+                            <i class="fa ${entry.shift === 'Day' ? 'fa-sun' : 'fa-moon'} text-[9px] mr-0.5"></i> ${entry.shift}
+                        </span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${badgeColor}">
+                            ${typeLabel}
+                        </span>
+                    </div>
+                `;
+                scheduleListContainer.appendChild(row);
+            });
+        }
+        cardContainer.classList.remove('hidden');
+    }
+
+    // Opens detailed profile modal for the currently selected summary staff member
+    function openSelectedStaffModal() {
+        const staffObj = appData.staff.find(s => s.name === selectedInsightStaffName);
+        if (staffObj) {
+            showModal(staffObj);
+        }
+    }
+
+    // Open Duty details listing (OT/PH popup logic)
+    function showDutyDetailsModal(dutyType) {
+        const modal = document.getElementById('dutyDetailsModal');
+        const title = document.getElementById('duty-modal-title');
+        const content = document.getElementById('duty-modal-content');
+        
+        title.innerHTML = dutyType === 'OT' 
+            ? '<i class="fa fa-business-time text-red-500"></i> รายชื่อผู้ปฏิบัติงานล่วงเวลา (OT)' 
+            : '<i class="fa fa-calendar-day text-amber-500"></i> รายชื่อผู้ปฏิบัติงานวันหยุดนักขัตฤกษ์ (PH)';
+
+        const year = currentDate.getFullYear();
+        const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const monthPrefix = `${year}-${monthStr}`;
+
+        const list = appData.roster.filter(r => r.type === dutyType && r.date.startsWith(monthPrefix));
+        list.sort((a, b) => a.date.localeCompare(b.date));
+
+        content.innerHTML = '';
+
+        if (list.length === 0) {
+            content.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 italic">ไม่มีพนักงานเข้าเวร ${dutyType} ในเดือนนี้</div>`;
+        } else {
+            list.forEach(r => {
+                const staff = appData.staff.find(s => s.name === r.name) || { name: r.name, dept: 'SKY Team', img: '', color: '#94a3b8' };
+                const dateObj = new Date(r.date);
+                const dateLabel = dateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                const initials = staff.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
+                
+                const card = document.createElement('div');
+                card.className = "flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 border border-slate-200";
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="relative w-9 h-9 rounded-full flex items-center justify-center font-bold bg-white border border-slate-200 text-xs text-slate-500">
+                            <span>${initials}</span>
+                            ${staff.img ? `<img src="${staff.img}" class="absolute inset-0 w-full h-full object-cover rounded-full z-20">` : ''}
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-800">${staff.name}</h4>
+                            <p class="text-[9px] text-slate-500">${staff.dept}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold text-amber-600 block">${dateLabel}</span>
+                        <span class="text-[9px] px-1 py-0.2 rounded font-bold ${r.shift === 'Day' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'}">${r.shift}</span>
+                    </div>
+                `;
+                content.appendChild(card);
+            });
+        }
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeDutyDetailsModal() {
+        const modal = document.getElementById('dutyDetailsModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
+    function formatPhoneNumber(numStr) {
+        if (!numStr) return "";
+        const cleaned = ('' + numStr).replace(/\D/g, '');
+        const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+        if (match) return match[1] + '-' + match[2] + '-' + match[3];
+        return numStr;
+    }
+
+    function checkOTAlert(day) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const dateStr = formatDateString(year, month, day);
+        const shiftMode = isNightShift ? "Night" : "Day";
+        
+        const activeShifts = appData.roster.filter(r => r.date === dateStr && r.shift === shiftMode);
+        if (activeShifts.length === 0) return false;
+        
+        const restCount = activeShifts.filter(r => r.type === "OFF" || r.type === "B").length;
+        if (restCount >= 2) return true;
+        
+        const workingCount = activeShifts.filter(r => r.type === "W" || r.type === "PH" || r.type === "OT").length;
+        const otCount = activeShifts.filter(r => r.type === "OT").length;
+        if (workingCount === 2 && otCount >= 1) return true;
+        
+        return false;
+    }
+
+    function getHolidayData(day) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const dateString = formatDateString(year, month, day);
+        return appData.holidays.find(h => h.date === dateString);
+    }
+
+    // Toggle shift logic
+    function toggleShift() {
+        isNightShift = !isNightShift;
+        const toggleBtn = document.getElementById('shift-toggle-btn');
+        const toggleIcon = document.getElementById('shift-icon');
+        const toggleText = document.getElementById('shift-text');
+
+        if (isNightShift) {
+            toggleBtn.className = "flex items-center justify-center gap-2 w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold shadow-md transition-all";
+            toggleIcon.className = "fa fa-moon";
+            toggleText.innerText = "Night";
+        } else {
+            toggleBtn.className = "flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold shadow-md transition-all";
+            toggleIcon.className = "fa fa-sun";
+            toggleText.innerText = "Day";
+        }
+        renderCalendar(); 
+    }
+
+    function changeMonth(offset) {
+        currentDate.setMonth(currentDate.getMonth() + offset);
+        currentSelectedDay = 1;
+        if (currentDate.getFullYear() === today.getFullYear() && currentDate.getMonth() === today.getMonth()) {
+            currentSelectedDay = today.getDate();
+        }
+        renderCalendar();
+    }
+
+    function changeModalMonth(offset) {
+        currentDate.setMonth(currentDate.getMonth() + offset);
+        renderCalendar();
+        if (activeModalStaff) {
+            renderModalCalendarGrid(activeModalStaff);
+        }
+    }
+
+    // Modern 7-Column Calendar Generator
+    function renderCalendar() {
+        const cal = document.getElementById('calendar-grid');
+        if (!cal) return;
+        
+        cal.innerHTML = '';
+        
+        // Sync Dropdowns to represent updated currentDate state
+        syncDropdowns();
+
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        const firstDayOfWeek = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = "h-11";
+            cal.appendChild(emptyCell);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const holidayObj = getHolidayData(i);
+            const isHoliday = !!holidayObj;
+            const isBookedOff = hasBookedDayOff(i);
+            const isOTAlert = checkOTAlert(i);
+            const isSelected = i === currentSelectedDay;
+
+            const div = document.createElement('div');
+            
+            let baseStyles = "day-box h-11 flex flex-col items-center justify-center rounded-xl cursor-pointer text-xs font-semibold relative border border-transparent ";
+            
+            if (isSelected) {
+                baseStyles += "bg-amber-500 text-white selected-day ";
+            } else if (isHoliday) {
+                baseStyles += "bg-amber-100 text-amber-800 ";
+            } else if (isBookedOff) {
+                baseStyles += "bg-slate-200 text-slate-800 ";
+            } else {
+                baseStyles += "bg-slate-50 hover:bg-slate-100 text-slate-700 ";
+            }
+
+            if (isOTAlert) {
+                baseStyles += "border-red-500 ";
+            }
+
+            div.className = baseStyles;
+            div.innerHTML = `
+                <span class="text-sm font-semibold leading-none">${i}</span>
+                ${isHoliday ? '<span class="absolute bottom-1 w-1 h-1 rounded-full bg-amber-500"></span>' : (isBookedOff ? '<span class="absolute bottom-1 w-1 h-1 rounded-full bg-slate-700"></span>' : '')}
+            `;
+            
+            const monthStr = String(month + 1).padStart(2, '0');
+            const dateStr = formatDateString(year, monthStr, i);
+
+            if (isHoliday) {
+                div.title = holidayObj.label;
+            } else if (isBookedOff) {
+                const shiftMode = isNightShift ? "Night" : "Day";
+                const bookedStaffNames = appData.roster.filter(r => r.date === dateStr && r.type === "B" && r.shift === shiftMode).map(r => r.name).join(', ');
+                div.title = `มีคนขอวันหยุดกะ${shiftMode === "Day" ? "เช้า" : "ดึก"} (B): ${bookedStaffNames}`;
+            }
+
+            div.onclick = () => {
+                currentSelectedDay = i;
+                renderCalendar();
+            };
+            cal.appendChild(div);
+        }
+
+        renderStaff(currentSelectedDay);
+        renderInsightStaffCarousel();
+        renderIndividualStats();
+    }
+
+    // Render staff assigned to the selected day
+    function renderStaff(day) {
+        const list = document.getElementById('staff-list');
+        const yearBE = currentDate.getFullYear() + 543;
+        const holidayObj = getHolidayData(day);
+        
+        let dateText = `${day} ${currentDate.toLocaleString('th-TH', { month: 'long' })} ${yearBE}`;
+        if (holidayObj) {
+            dateText += ` - ${holidayObj.label}`;
+        }
+        document.getElementById('selected-date').innerText = dateText;
+        list.innerHTML = '';
+        
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const formattedDay = String(day).padStart(2, '0');
+        const dateStr = `${year}-${month}-${formattedDay}`;
+        const shiftMode = isNightShift ? "Night" : "Day";
+        
+        const workingRoster = appData.roster.filter(r => r.date === dateStr && (r.type === "W" || r.type === "PH" || r.type === "OT" || r.type === "B"));
+        
+        const workingStaff = workingRoster.map(rosterItem => {
+            const staffObj = appData.staff.find(s => s.name === rosterItem.name);
+            return staffObj ? { ...staffObj, shift: rosterItem.shift, dutyType: rosterItem.type } : null;
+        }).filter(Boolean);
+        
+        workingStaff.sort((a, b) => {
+            if (a.shift === shiftMode && b.shift !== shiftMode) return -1;
+            if (a.shift !== shiftMode && b.shift === shiftMode) return 1;
+            return 0;
+        });
+        
+        workingStaff.forEach(p => {
+            const item = document.createElement('div');
+            
+            let itemBgClass = 'bg-slate-50 border-slate-200';
+            if (p.dutyType === 'OT') {
+                itemBgClass = 'bg-red-50 border-red-200';
+            } else if (p.dutyType === 'B') {
+                itemBgClass = 'bg-slate-100 border-slate-300';
+            }
+
+            item.className = `staff-list-item flex items-center justify-between p-3 rounded-2xl border transition hover:shadow-md cursor-pointer ${itemBgClass}`;
+            item.setAttribute('data-name', p.name);
+            item.onclick = () => showModal(p);
+            
+            const firstChar = p.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
+            
+            let shiftBadgeBg = p.shift === "Day" ? "bg-amber-100 text-amber-800" : "bg-indigo-100 text-indigo-800";
+            let shiftLabel = p.shift === "Day" ? "กะเช้า (Day)" : "กะดึก (Night)";
+            
+            let dutyBadgeBg = "bg-green-100 text-green-800";
+            let dutyLabel = "ปฏิบัติงานปกติ (W)";
+            
+            if (p.dutyType === "PH") {
+                dutyBadgeBg = "bg-yellow-100 text-yellow-800";
+                dutyLabel = "ทำงานวันหยุด (PH)";
+            } else if (p.dutyType === "OT") {
+                dutyBadgeBg = "bg-red-100 text-red-800";
+                dutyLabel = "ทำงานโอที (OT)";
+            } else if (p.dutyType === "B") {
+                dutyBadgeBg = "bg-slate-200 text-slate-800";
+                dutyLabel = "ขอวันหยุด (B)";
+            }
+            
+            const imgHtml = p.img 
+                ? `<img class="absolute inset-0 w-full h-full object-cover z-20" src="${p.img}" alt="${p.name}">` 
+                : '';
+            
+            item.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="relative w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-bold border-2 transition bg-white border-slate-200 text-slate-500">
+                        <span class="absolute z-10 text-xs">${firstChar}</span>
+                        ${imgHtml}
+                    </div>
+                    <div>
+                        <div class="flex gap-1.5 mb-1 flex-wrap">
+                            <span class="px-2 py-0.5 rounded-md text-[9px] font-bold ${shiftBadgeBg}">
+                                ${shiftLabel}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md text-[9px] font-bold ${dutyBadgeBg}">
+                                ${dutyLabel}
+                            </span>
+                        </div>
+                        <h4 class="text-xs font-bold text-slate-800">${p.name}</h4>
+                    </div>
+                </div>
+                <i class="fa fa-chevron-right text-[10px] text-slate-400 pr-1"></i>
+            `;
+            list.appendChild(item);
+        });
+        
+        if (workingStaff.length === 0 && appData.roster.length > 0) {
+            list.innerHTML = `
+                <div class="text-center py-12 text-slate-500">
+                    <i class="fa fa-calendar-times block text-3xl mb-2 text-slate-300"></i>
+                    <p class="text-xs font-semibold">วันนี้ไม่มีพนักงานเข้าเวรปฏิบัติหน้าที่</p>
+                </div>
+            `;
+        }
+    }
+
+    // Modal Control
+    function showModal(p) {
+        activeModalStaff = p; 
+        document.getElementById('modal-name').innerText = p.name;
+        document.getElementById('modal-id').innerText = p.id;
+        document.getElementById('modal-en').innerText = p.en;
+        document.getElementById('modal-dept').innerText = p.dept;
+        document.getElementById('modal-email-href').innerText = p.email;
+        document.getElementById('modal-email-href').href = `mailto:${p.email}`;
+        document.getElementById('modal-phone').innerText = formatPhoneNumber(p.phone);
+        document.getElementById('modal-personal-phone').innerText = formatPhoneNumber(p.personalPhone);
+        
+        const initialsEl = document.getElementById('modal-avatar-initials');
+        const imgEl = document.getElementById('modal-avatar-img');
+        const avatarContainer = document.getElementById('modal-avatar-container');
+        
+        avatarContainer.style.borderColor = 'transparent';
+        initialsEl.innerText = p.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
+        initialsEl.style.color = '#888'; 
+        
+        if (p.img) {
+            imgEl.src = p.img;
+            imgEl.style.display = 'block';
+        } else {
+            imgEl.style.display = 'none';
+        }
+        
+        setModalTab('calendar');
+        const modal = document.getElementById('staffModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeModal() { 
+        const modal = document.getElementById('staffModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
+    function renderModalCalendarGrid(p) {
+        const grid = document.getElementById('modal-calendar-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const monthStr = String(month + 1).padStart(2, '0');
+
+        // Sync Modal select elements to the target date
+        syncDropdowns();
+
+        const firstDayOfWeek = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = "h-8";
+            grid.appendChild(emptyCell);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dateStr = formatDateString(year, monthStr, i);
+            const shiftEntry = appData.roster.find(r => r.date === dateStr && r.name === p.name);
+            const isWorking = !!shiftEntry;
+
+            const div = document.createElement('div');
+            div.className = "h-8 w-8 mx-auto flex items-center justify-center rounded-full text-[10px] font-semibold transition-all ";
+
+            if (isWorking) {
+                if (shiftEntry.type === 'W') {
+                    div.className += "border-2 border-emerald-500 bg-emerald-50 text-emerald-800 font-bold";
+                    div.title = "เวรปกติ (Day/Night)";
+                } else if (shiftEntry.type === 'OT') {
+                    div.className += "border-2 border-red-500 bg-red-50 text-red-800 font-bold";
+                    div.title = "เวรล่วงเวลา (OT)";
+                } else if (shiftEntry.type === 'PH') {
+                    div.className += "border-2 border-amber-500 bg-amber-50 text-amber-800 font-bold";
+                    div.title = "ทำงานวันเทศกาล (PH)";
+                } else if (shiftEntry.type === 'B') {
+                    div.className += "border-2 border-slate-500 bg-slate-100 text-slate-800 font-bold";
+                    div.title = "ขอวันหยุด (B)";
+                }
+            } else {
+                div.className += "text-slate-400 font-light cursor-default";
+            }
+
+            div.innerHTML = `<span>${i}</span>`;
+            grid.appendChild(div);
+        }
+    }
+
+    function setModalTab(tabName) {
+        const tabCalendar = document.getElementById('modal-tab-calendar');
+        const tabInfo = document.getElementById('modal-tab-info');
+        const btnCalendar = document.getElementById('tab-btn-calendar');
+        const btnInfo = document.getElementById('tab-btn-info');
+
+        if (tabName === 'calendar') {
+            tabCalendar.classList.remove('hidden');
+            tabInfo.classList.add('hidden');
+            btnCalendar.className = "flex-1 pb-2 text-center text-amber-600 border-b-2 border-amber-500 transition-colors";
+            btnInfo.className = "flex-1 pb-2 text-center text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors";
+            if (activeModalStaff) renderModalCalendarGrid(activeModalStaff);
+        } else {
+            tabCalendar.classList.add('hidden');
+            tabInfo.classList.remove('hidden');
+            btnCalendar.className = "flex-1 pb-2 text-center text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors";
+            btnInfo.className = "flex-1 pb-2 text-center text-amber-600 border-b-2 border-amber-500 transition-colors";
+        }
+    }
+
+    // Bootstrapping
+    initData();
+</script>
+</body>
+</html>
