@@ -22,15 +22,36 @@
             }
         }
     </script>
-    <!-- Google Fonts for Thai & English Languages -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts for Thai (Kanit) & English Languages -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Premium Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: 'Prompt', 'Inter', sans-serif;
+            font-family: 'Kanit', 'Inter', sans-serif;
             transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: auto; 
+            min-height: 100vh;
+            background: radial-gradient(circle at center bottom, #2563eb 0%, #1e3a8a 35%, #0f172a 100%);
         }
+        
+        /* Premium Glassmorphism Style from the template */
+        .glass {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         /* Custom scrollbars configuration */
         ::-webkit-scrollbar {
             width: 6px;
@@ -40,7 +61,7 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 999px;
         }
         .scrollbar-none::-webkit-scrollbar {
@@ -51,61 +72,89 @@
             scrollbar-width: none;
         }
         .selected-day {
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+            border: 2px solid #f59e0b !important;
         }
         .day-box {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.25);
+            filter: blur(80px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        select option {
+            background-color: #1e3a8a;
+            color: white;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen py-6 px-4 md:px-6">
+<body class="text-white min-h-screen py-8 px-4 md:px-6 relative">
 
-<div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start justify-center w-full">
+<!-- Decorative Glow Element -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="glow left-1/4 top-1/4"></div>
+    <div class="glow right-1/4 bottom-10"></div>
+</div>
+
+<div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start justify-center w-full relative z-10">
     
     <!-- COLUMN 1: Main Calendar View Card -->
     <div class="w-full flex justify-center">
-        <div class="w-full max-w-[480px] lg:max-w-[500px] bg-white border border-slate-200 rounded-[32px] shadow-xl overflow-hidden transition-all duration-300">
+        <div class="w-full max-w-[480px] lg:max-w-[500px] glass rounded-[32px] shadow-2xl overflow-hidden transition-all duration-300">
             <!-- App Identity Header -->
             <div class="p-6 pb-2">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white font-bold">S</div>
-                        <span class="text-xs font-bold tracking-widest text-slate-400">SKY UBP SYSTEM</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white font-bold shadow-md">S</div>
+                        <span class="text-xs font-bold tracking-widest text-blue-300">SKY UBP SYSTEM</span>
                     </div>
-                    <div class="text-xs text-slate-400 font-mono" id="live-clock">00:00:00</div>
+                    <div class="text-xs text-blue-200 font-mono bg-black/20 px-3 py-1 rounded-full border border-white/5" id="live-clock">00:00:00</div>
                 </div>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
+                <h1 class="text-2xl font-extrabold bg-gradient-to-r from-white via-amber-300 to-amber-500 bg-clip-text text-transparent">
                     Monthly Shift Schedule
                 </h1>
-                <p class="text-xs text-slate-400">ตารางจัดเวรและกะปฏิบัติงานประจำเดือน</p>
+                <p class="text-xs text-blue-200/80 mt-1">ตารางจัดเวรและกะปฏิบัติงานประจำเดือน</p>
             </div>
 
             <!-- Database Connection Status -->
             <div class="px-6 pb-4">
-                <div id="db-status" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-100">
+                <div id="db-status" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-400/20">
                     <i class="fa fa-spinner fa-spin"></i> กำลังเชื่อมต่อฐานข้อมูล...
                 </div>
             </div>
 
             <!-- Calendar Navigation Header -->
             <div class="px-6 py-2">
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 sm:p-3 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5 sm:p-3 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
                     <div class="flex items-center justify-between w-full sm:w-auto gap-1">
-                        <button onclick="changeMonth(-1)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนก่อนหน้า">
+                        <button onclick="changeMonth(-1)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white shadow-sm transition border border-white/10" title="เดือนก่อนหน้า">
                             <i class="fa fa-chevron-left text-xs"></i>
                         </button>
                         
                         <!-- Interactive Month & Year Selector Dropdowns -->
-                        <div class="flex gap-1 bg-white border border-slate-200 rounded-xl px-2.5 py-1 shadow-sm">
-                            <select id="select-month" onchange="onMonthYearSelectChange()" class="text-xs font-bold text-slate-800 bg-transparent border-none outline-none cursor-pointer py-1">
+                        <div class="flex gap-1 bg-white/10 border border-white/20 rounded-xl px-2.5 py-1 shadow-sm">
+                            <select id="select-month" onchange="onMonthYearSelectChange()" class="text-xs font-bold text-white bg-transparent border-none outline-none cursor-pointer py-1">
                                 <!-- Options generated in JS dynamically -->
                             </select>
-                            <select id="select-year" onchange="onMonthYearSelectChange()" class="text-xs font-bold text-slate-800 bg-transparent border-none outline-none cursor-pointer py-1">
+                            <select id="select-year" onchange="onMonthYearSelectChange()" class="text-xs font-bold text-white bg-transparent border-none outline-none cursor-pointer py-1">
                                 <!-- Options generated in JS dynamically -->
                             </select>
                         </div>
 
-                        <button onclick="changeMonth(1)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนถัดไป">
+                        <button onclick="changeMonth(1)" class="w-9 h-9 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 text-white shadow-sm transition border border-white/10" title="เดือนถัดไป">
                             <i class="fa fa-chevron-right text-xs"></i>
                         </button>
                     </div>
@@ -120,13 +169,13 @@
             <!-- 7-Day Grid Calendar -->
             <div class="px-6 py-4">
                 <div class="grid grid-cols-7 gap-1.5 mb-2 text-center">
-                    <span class="text-[10px] font-bold text-red-500">อา.</span>
-                    <span class="text-[10px] font-bold text-slate-500">จ.</span>
-                    <span class="text-[10px] font-bold text-slate-500">อ.</span>
-                    <span class="text-[10px] font-bold text-slate-500">พ.</span>
-                    <span class="text-[10px] font-bold text-slate-500">พฤ.</span>
-                    <span class="text-[10px] font-bold text-slate-500">ศ.</span>
-                    <span class="text-[10px] font-bold text-sky-500">ส.</span>
+                    <span class="text-[11px] font-bold text-red-400">อา.</span>
+                    <span class="text-[11px] font-bold text-blue-200">จ.</span>
+                    <span class="text-[11px] font-bold text-blue-200">อ.</span>
+                    <span class="text-[11px] font-bold text-blue-200">พ.</span>
+                    <span class="text-[11px] font-bold text-blue-200">พฤ.</span>
+                    <span class="text-[11px] font-bold text-blue-200">ศ.</span>
+                    <span class="text-[11px] font-bold text-sky-300">ส.</span>
                 </div>
                 <div id="calendar-grid" class="grid grid-cols-7 gap-1.5 min-h-[180px]">
                     <!-- Rendered Dynamically -->
@@ -137,16 +186,16 @@
 
     <!-- COLUMN 2: Daily Duty List -->
     <div class="w-full flex justify-center lg:col-span-1">
-        <div class="w-full max-w-[480px] lg:max-w-[500px] bg-white border border-slate-200 rounded-[32px] shadow-xl overflow-hidden transition-all duration-300">
-            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">พนักงานปฏิบัติหน้าที่ประจำวันที่</p>
-                <h3 id="selected-date" class="text-sm font-bold text-slate-800">...</h3>
+        <div class="w-full max-w-[480px] lg:max-w-[500px] glass rounded-[32px] shadow-2xl overflow-hidden transition-all duration-300">
+            <div class="px-6 py-4 border-b border-white/10 bg-white/5">
+                <p class="text-[10px] font-semibold text-blue-300 uppercase tracking-wider">พนักงานปฏิบัติหน้าที่ประจำวันที่</p>
+                <h3 id="selected-date" class="text-base font-bold text-white mt-1">...</h3>
             </div>
             
             <div class="px-6 py-4" id="staff-container">
                 <div id="loading-box" class="flex flex-col items-center justify-center py-10 gap-3 text-slate-400">
                     <i class="fa fa-spinner fa-spin text-2xl text-amber-500"></i>
-                    <span class="text-xs font-semibold">กำลังประมวลผลข้อมูล...</span>
+                    <span class="text-xs font-semibold text-blue-200">กำลังประมวลผลข้อมูล...</span>
                 </div>
                 <div id="staff-list" class="space-y-2.5">
                     <!-- Loaded Dynamically -->
@@ -157,112 +206,112 @@
 
     <!-- COLUMN 3: Roster Insights & Individual Analytics -->
     <div class="w-full flex justify-center lg:col-span-2 xl:col-span-1">
-        <div class="w-full max-w-[480px] lg:max-w-[500px] bg-white border border-slate-200 rounded-[32px] p-6 shadow-xl transition-all duration-300 space-y-6">
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <div class="w-full max-w-[480px] lg:max-w-[500px] glass rounded-[32px] p-6 shadow-2xl transition-all duration-300 space-y-6">
+            <h2 class="text-base font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
                 <i class="fa fa-chart-pie text-amber-500"></i> สรุปข้อมูลภาพรวมประจำเดือน (Insights)
             </h2>
             
             <!-- Symmetrical 4-Card Statistics Grid -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-center">
-                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">พนักงาน</span>
-                    <span class="text-base font-bold text-slate-800" id="stat-total-staff">0</span>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5 text-center">
+                    <span class="text-[9px] text-blue-300 font-bold block uppercase leading-tight mb-1">พนักงาน</span>
+                    <span class="text-base font-bold text-white" id="stat-total-staff">0</span>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-2.5 text-center">
-                    <span class="text-base font-bold text-amber-500" id="stat-active-shifts">0</span>
-                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">กะงานรวม</span>
+                <div class="bg-white/5 border border-white/10 rounded-2xl p-2.5 text-center">
+                    <span class="text-base font-bold text-amber-400" id="stat-active-shifts">0</span>
+                    <span class="text-[9px] text-blue-300 font-bold block uppercase leading-tight mb-1">กะงานรวม</span>
                 </div>
-                <div onclick="showDutyDetailsModal('OT')" class="bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
-                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">โอที (OT) <i class="fa fa-info-circle text-[8px] text-red-500"></i></span>
-                    <span class="text-base font-bold text-red-500" id="stat-ot-shifts">0</span>
+                <div onclick="showDutyDetailsModal('OT')" class="bg-white/5 hover:bg-red-500/15 border border-white/10 hover:border-red-500/30 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
+                    <span class="text-[9px] text-blue-300 font-bold block uppercase leading-tight mb-1">โอที (OT) <i class="fa fa-info-circle text-[8px] text-red-400"></i></span>
+                    <span class="text-base font-bold text-red-400" id="stat-ot-shifts">0</span>
                 </div>
-                <div onclick="showDutyDetailsModal('PH')" class="bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
-                    <span class="text-[9px] text-slate-500 font-bold block uppercase leading-tight mb-1">นักขัตฯ (PH) <i class="fa fa-info-circle text-[8px] text-amber-500"></i></span>
-                    <span class="text-base font-bold text-amber-500" id="stat-ph-shifts">0</span>
+                <div onclick="showDutyDetailsModal('PH')" class="bg-white/5 hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/30 rounded-2xl p-2.5 text-center cursor-pointer transition-all duration-200">
+                    <span class="text-[9px] text-blue-300 font-bold block uppercase leading-tight mb-1">นักขัตฯ (PH) <i class="fa fa-info-circle text-[8px] text-amber-400"></i></span>
+                    <span class="text-base font-bold text-amber-400" id="stat-ph-shifts">0</span>
                 </div>
             </div>
 
             <!-- DAILY TEAM OVERVIEW CAROUSEL -->
-            <div class="bg-slate-50/60 border border-slate-200 rounded-2xl p-5 shadow-sm">
-                <h3 class="text-xs font-bold tracking-widest text-center text-slate-500 uppercase mb-2">
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-inner">
+                <h3 class="text-xs font-bold tracking-widest text-center text-blue-300 uppercase mb-2">
                     ทีมงานหลักประจำเดือน
                 </h3>
                 
                 <div class="relative w-full">
-                    <div id="insight-staff-carousel" class="flex flex-wrap justify-center gap-3 py-4">
+                    <div id="insight-staff-carousel" class="flex flex-wrap justify-center gap-3 py-2">
                         <!-- Loaded Dynamically -->
                     </div>
                 </div>
-                <p class="text-[10px] text-center text-slate-500 mt-2">💡 คลิกที่พนักงานด้านบนเพื่อตรวจสอบประวัติและสถิติกะเดือนนี้</p>
+                <p class="text-[10px] text-center text-blue-200 mt-2">💡 คลิกที่พนักงานด้านบนเพื่อตรวจสอบประวัติและสถิติกะเดือนนี้</p>
             </div>
 
             <!-- INDIVIDUAL MONTHLY STATS DETAILS PANEL -->
-            <div id="individual-stats-card" class="bg-slate-50 border border-slate-200 rounded-2xl p-5 hidden transition-all duration-300">
+            <div id="individual-stats-card" class="bg-white/5 border border-white/10 rounded-2xl p-5 hidden transition-all duration-300">
                 
                 <!-- Clickable Profile Header to open staff modal details directly -->
-                <div onclick="openSelectedStaffModal()" class="flex items-center gap-3 mb-4 border-b border-slate-200 pb-3 cursor-pointer hover:bg-slate-100/70 p-2 -mx-2 rounded-2xl transition-all duration-200" title="คลิกดูประวัติและตารางงานเพิ่มเติม">
-                    <div id="ind-avatar-container" class="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center font-bold border-2 bg-slate-200 flex-shrink-0">
-                        <span id="ind-avatar-initials" class="absolute z-10 text-xs font-semibold"></span>
+                <div onclick="openSelectedStaffModal()" class="flex items-center gap-3 mb-4 border-b border-white/10 pb-3 cursor-pointer hover:bg-white/10 p-2 -mx-2 rounded-2xl transition-all duration-200" title="คลิกดูประวัติและตารางงานเพิ่มเติม">
+                    <div id="ind-avatar-container" class="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center font-bold border-2 bg-slate-800 flex-shrink-0 border-white/10">
+                        <span id="ind-avatar-initials" class="absolute z-10 text-xs font-semibold text-white"></span>
                         <img id="ind-avatar-img" class="absolute inset-0 w-full h-full object-cover z-20" src="" alt="" onerror="this.style.display='none'">
                     </div>
                     <div class="flex-grow">
-                        <h4 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-1.5">
                             <span id="ind-staff-name">...</span>
-                            <i class="fa fa-chevron-right text-[10px] text-slate-400"></i>
+                            <i class="fa fa-chevron-right text-[10px] text-blue-300"></i>
                         </h4>
-                        <p id="ind-staff-dept" class="text-[10px] text-slate-500">...</p>
+                        <p id="ind-staff-dept" class="text-[10px] text-blue-300">...</p>
                     </div>
                 </div>
 
                 <!-- Metrics Indicators -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-center">
-                    <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
-                        <span class="text-[9px] font-bold text-emerald-600 block uppercase mb-1">งานปกติ (W)</span>
-                        <span id="ind-w-days" class="text-lg font-bold text-slate-800">0</span>
-                        <span class="text-[9px] text-slate-500 block">วัน</span>
+                    <div class="bg-black/20 border border-white/10 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-emerald-400 block uppercase mb-1">งานปกติ (W)</span>
+                        <span id="ind-w-days" class="text-lg font-bold text-white">0</span>
+                        <span class="text-[9px] text-blue-200 block">วัน</span>
                     </div>
-                    <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
-                        <span class="text-[9px] font-bold text-red-500 block uppercase mb-1">โอที (OT)</span>
-                        <span id="ind-ot-days" class="text-lg font-bold text-slate-800">0</span>
-                        <span class="text-[9px] text-slate-500 block">วัน</span>
+                    <div class="bg-black/20 border border-white/10 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-red-400 block uppercase mb-1">โอที (OT)</span>
+                        <span id="ind-ot-days" class="text-lg font-bold text-white">0</span>
+                        <span class="text-[9px] text-blue-200 block">วัน</span>
                     </div>
-                    <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-sm">
-                        <span class="text-[9px] font-bold text-amber-500 block uppercase mb-1">นักขัตฯ (PH)</span>
-                        <span id="ind-ph-days" class="text-lg font-bold text-slate-800">0</span>
-                        <span class="text-[9px] text-slate-500 block">วัน</span>
+                    <div class="bg-black/20 border border-white/10 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-amber-400 block uppercase mb-1">นักขัตฯ (PH)</span>
+                        <span id="ind-ph-days" class="text-lg font-bold text-white">0</span>
+                        <span class="text-[9px] text-blue-200 block">วัน</span>
                     </div>
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 shadow-sm">
-                        <span class="text-[9px] font-bold text-amber-600 block uppercase mb-1">รวมวันทำงาน</span>
-                        <span id="ind-total-days" class="text-lg font-bold text-amber-600">0</span>
-                        <span class="text-[9px] text-slate-500 block">วัน/เดือน</span>
+                    <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 shadow-sm">
+                        <span class="text-[9px] font-bold text-amber-400 block uppercase mb-1">รวมวันทำงาน</span>
+                        <span id="ind-total-days" class="text-lg font-bold text-amber-400">0</span>
+                        <span class="text-[9px] text-blue-200 block">วัน/เดือน</span>
                     </div>
                 </div>
 
                 <!-- Shifts breakdown -->
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs shadow-sm">
-                        <span class="text-[10px] text-slate-500 font-bold block uppercase mb-2">สัดส่วนกะ (Shifts)</span>
+                    <div class="bg-black/20 border border-white/10 rounded-xl p-3 text-xs shadow-sm">
+                        <span class="text-[10px] text-blue-300 font-bold block uppercase mb-2">สัดส่วนกะ (Shifts)</span>
                         <div class="flex justify-between items-center text-[11px] mb-1">
-                            <span class="text-slate-600"><i class="fa fa-sun text-amber-500 mr-1"></i>กะเช้า (Day):</span>
-                            <span id="ind-day-shifts" class="font-bold text-slate-700">0 วัน</span>
+                            <span class="text-blue-200"><i class="fa fa-sun text-amber-400 mr-1"></i>กะเช้า (Day):</span>
+                            <span id="ind-day-shifts" class="font-bold text-white">0 วัน</span>
                         </div>
                         <div class="flex justify-between items-center text-[11px]">
-                            <span class="text-slate-600"><i class="fa fa-moon text-indigo-500 mr-1"></i>กะดึก (Night):</span>
-                            <span id="ind-night-shifts" class="font-bold text-slate-700">0 วัน</span>
+                            <span class="text-blue-200"><i class="fa fa-moon text-indigo-400 mr-1"></i>กะดึก (Night):</span>
+                            <span id="ind-night-shifts" class="font-bold text-white">0 วัน</span>
                         </div>
                     </div>
-                    <div class="bg-white border border-slate-200 rounded-xl p-3 text-xs flex flex-col justify-between shadow-sm">
-                        <span class="text-[10px] text-slate-500 font-bold block uppercase mb-1">วันหยุด (OFF)</span>
+                    <div class="bg-black/20 border border-white/10 rounded-xl p-3 text-xs flex flex-col justify-between shadow-sm">
+                        <span class="text-[10px] text-blue-300 font-bold block uppercase mb-1">วันหยุด (OFF)</span>
                         <div class="flex justify-between items-end mt-2">
-                            <span class="text-[11px] text-slate-500">พักผ่อนทั้งหมด:</span>
-                            <span class="text-lg font-bold text-emerald-500"><span id="ind-off-days">0</span> <span class="text-[10px] font-normal text-slate-400">วัน</span></span>
+                            <span class="text-[11px] text-blue-200">พักผ่อนทั้งหมด:</span>
+                            <span class="text-lg font-bold text-emerald-400"><span id="ind-off-days">0</span> <span class="text-[10px] font-normal text-blue-300">วัน</span></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Mini Timeline List -->
                 <div>
-                    <h5 class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2">ปฏิทินกะเดือนนี้ (Shift Timeline)</h5>
+                    <h5 class="text-[10px] font-bold text-blue-300 uppercase tracking-wide mb-2">ปฏิทินกะเดือนนี้ (Shift Timeline)</h5>
                     <div id="ind-schedule-list" class="max-h-[120px] overflow-y-auto space-y-1.5 pr-1 font-sans">
                         <!-- Loaded Dynamically -->
                     </div>
@@ -273,11 +322,11 @@
 </div>
 
 <!-- SPECIAL MODAL: OT/PH Duty Assigned Staff List -->
-<div id="dutyDetailsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1100] hidden items-center justify-center p-4" onclick="closeDutyDetailsModal()">
-    <div class="bg-white border border-slate-200 p-6 rounded-[32px] w-full max-w-[420px] shadow-2xl relative transition-all duration-300 transform scale-95" onclick="event.stopPropagation()">
-        <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-200">
-            <h3 id="duty-modal-title" class="text-sm font-bold text-slate-800 flex items-center gap-2">...</h3>
-            <button onclick="closeDutyDetailsModal()" class="text-slate-400 hover:text-slate-600 transition text-lg"><i class="fa fa-times"></i></button>
+<div id="dutyDetailsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[1100] hidden items-center justify-center p-4" onclick="closeDutyDetailsModal()">
+    <div class="glass-dark p-6 rounded-[32px] w-full max-w-[420px] shadow-2xl relative transition-all duration-300 transform scale-95 text-white" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center pb-4 mb-4 border-b border-white/10">
+            <h3 id="duty-modal-title" class="text-sm font-bold text-white flex items-center gap-2">...</h3>
+            <button onclick="closeDutyDetailsModal()" class="text-blue-300 hover:text-white transition text-lg"><i class="fa fa-times"></i></button>
         </div>
         <div id="duty-modal-content" class="space-y-3 max-h-[300px] overflow-y-auto pr-1">
             <!-- Populated dynamically -->
@@ -286,59 +335,59 @@
 </div>
 
 <!-- MAIN STAFF MODAL -->
-<div id="staffModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1000] hidden items-center justify-center p-4" onclick="closeModal()">
-    <div class="bg-white border border-slate-200 p-6 md:p-8 rounded-[32px] w-full max-w-[420px] shadow-2xl relative transition-all duration-300 transform scale-95" onclick="event.stopPropagation()">
+<div id="staffModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[1000] hidden items-center justify-center p-4" onclick="closeModal()">
+    <div class="glass-dark p-6 md:p-8 rounded-[32px] w-full max-w-[420px] shadow-2xl relative transition-all duration-300 transform scale-95 text-white" onclick="event.stopPropagation()">
         
         <!-- Header Profile Info -->
-        <div class="text-center pb-4 border-b border-slate-200">
-            <div id="modal-avatar-container" class="relative w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center font-bold text-2xl border-2 bg-slate-100 transition">
-                <span id="modal-avatar-initials" class="absolute z-10 text-slate-500"></span>
+        <div class="text-center pb-4 border-b border-white/10">
+            <div id="modal-avatar-container" class="relative w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden flex items-center justify-center font-bold text-2xl border-2 bg-slate-800 border-white/20 transition">
+                <span id="modal-avatar-initials" class="absolute z-10 text-white/70"></span>
                 <img id="modal-avatar-img" class="absolute inset-0 w-full h-full object-cover z-20" src="" alt="Profile Image" onerror="this.style.display='none'">
             </div>
-            <h3 id="modal-name" class="text-base font-bold text-slate-800 mb-0.5">...</h3>
-            <span id="modal-dept" class="px-2.5 py-0.5 rounded-full bg-slate-100 text-[10px] text-slate-500 font-semibold inline-block">...</span>
+            <h3 id="modal-name" class="text-base font-bold text-white mb-0.5">...</h3>
+            <span id="modal-dept" class="px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] text-blue-300 font-semibold inline-block">...</span>
         </div>
 
         <!-- Tab Switches Header -->
-        <div class="flex border-b border-slate-200 mb-4 mt-3 text-xs font-bold">
-            <button id="tab-btn-calendar" onclick="setModalTab('calendar')" class="flex-1 pb-2 text-center text-amber-500 border-b-2 border-amber-500 transition-colors">ปฏิทินปฏิบัติงาน</button>
-            <button id="tab-btn-info" onclick="setModalTab('info')" class="flex-1 pb-2 text-center text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors">ประวัติส่วนตัว</button>
+        <div class="flex border-b border-white/10 mb-4 mt-3 text-xs font-bold">
+            <button id="tab-btn-calendar" onclick="setModalTab('calendar')" class="flex-1 pb-2 text-center text-amber-400 border-b-2 border-amber-500 transition-colors">ปฏิทินปฏิบัติงาน</button>
+            <button id="tab-btn-info" onclick="setModalTab('info')" class="flex-1 pb-2 text-center text-blue-300 hover:text-white border-b-2 border-transparent transition-colors">ประวัติส่วนตัว</button>
         </div>
 
         <!-- TAB 1: CALENDAR VIEW inside modal with month/year switching -->
         <div id="modal-tab-calendar" class="space-y-3">
-            <div class="flex justify-between items-center bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="flex justify-between items-center bg-white/5 border border-white/10 rounded-xl p-2.5">
                 
                 <!-- Interactive Month Selector inside Staff Modal -->
                 <div class="flex items-center gap-1">
-                    <button onclick="changeModalMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนก่อนหน้า">
+                    <button onclick="changeModalMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shadow-sm transition border border-white/10" title="เดือนก่อนหน้า">
                         <i class="fa fa-chevron-left text-[10px]"></i>
                     </button>
-                    <div class="flex gap-0.5 bg-white border border-slate-200 rounded-lg px-2 py-0.5 shadow-sm">
-                        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="text-[11px] font-bold text-slate-700 bg-transparent border-none outline-none cursor-pointer py-0.5">
+                    <div class="flex gap-0.5 bg-white/10 border border-white/20 rounded-lg px-2 py-0.5 shadow-sm">
+                        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="text-[11px] font-bold text-white bg-transparent border-none outline-none cursor-pointer py-0.5">
                             <!-- Populated dynamically -->
                         </select>
-                        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="text-[11px] font-bold text-slate-700 bg-transparent border-none outline-none cursor-pointer py-0.5">
+                        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="text-[11px] font-bold text-white bg-transparent border-none outline-none cursor-pointer py-0.5">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
-                    <button onclick="changeModalMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white hover:bg-slate-100 text-slate-600 shadow-sm transition border border-slate-200" title="เดือนถัดไป">
+                    <button onclick="changeModalMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shadow-sm transition border border-white/10" title="เดือนถัดไป">
                         <i class="fa fa-chevron-right text-[10px]"></i>
                     </button>
                 </div>
 
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200">DUTY PLAN</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">DUTY PLAN</span>
             </div>
 
             <!-- Mini 7-Day Grid Headers -->
-            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500">
-                <span class="text-red-500">อา.</span>
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-blue-300">
+                <span class="text-red-400">อา.</span>
                 <span>จ.</span>
                 <span>อ.</span>
                 <span>พ.</span>
                 <span>พฤ.</span>
                 <span>ศ.</span>
-                <span class="text-sky-500">ส.</span>
+                <span class="text-sky-300">ส.</span>
             </div>
 
             <!-- Mini Calendar Roster Days Grid -->
@@ -347,41 +396,41 @@
             </div>
 
             <!-- Legend Indicators inside Modal -->
-            <div class="flex justify-center gap-3 text-[9px] font-bold pt-2.5 text-slate-500 border-t border-slate-200 flex-wrap">
+            <div class="flex justify-center gap-3 text-[9px] font-bold pt-2.5 text-blue-300 border-t border-white/10 flex-wrap">
                 <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> ปกติ (W)</span>
                 <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> โอที (OT)</span>
                 <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> นักขัตฯ (PH)</span>
-                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-600"></span> ขอหยุด (B)</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-500"></span> ขอหยุด (B)</span>
             </div>
         </div>
 
         <!-- TAB 2: STAFF CONTACT DETAILS VIEW -->
-        <div id="modal-tab-info" class="space-y-3 hidden text-xs">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <span class="text-slate-500 font-semibold uppercase tracking-wider">รหัสพนักงาน</span>
-                <span id="modal-id" class="font-mono font-bold text-slate-800">...</span>
+        <div id="modal-tab-info" class="space-y-3 text-xs">
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-blue-300 font-semibold uppercase tracking-wider">รหัสพนักงาน</span>
+                <span id="modal-id" class="font-mono font-bold text-white">...</span>
             </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <span class="text-slate-500 font-semibold uppercase tracking-wider">English Name</span>
-                <span id="modal-en" class="font-bold text-slate-800">...</span>
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-blue-300 font-semibold uppercase tracking-wider">English Name</span>
+                <span id="modal-en" class="font-bold text-white">...</span>
             </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <span class="text-slate-500 font-semibold uppercase tracking-wider">อีเมลบริษัท</span>
-                <a id="modal-email-href" href="" class="text-amber-600 hover:underline font-semibold">...</a>
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-blue-300 font-semibold uppercase tracking-wider">อีเมลบริษัท</span>
+                <a id="modal-email-href" href="" class="text-amber-400 hover:underline font-semibold">...</a>
             </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <span class="text-slate-500 font-semibold uppercase tracking-wider">เบอร์โทรศัพท์ทีม</span>
-                <span id="modal-phone" class="font-semibold text-slate-800">...</span>
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-blue-300 font-semibold uppercase tracking-wider">เบอร์โทรศัพท์ทีม</span>
+                <span id="modal-phone" class="font-semibold text-white">...</span>
             </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <span class="text-slate-500 font-semibold uppercase tracking-wider">เบอร์โทรส่วนตัว</span>
-                <span id="modal-personal-phone" class="font-semibold text-slate-800">...</span>
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-blue-300 font-semibold uppercase tracking-wider">เบอร์โทรส่วนตัว</span>
+                <span id="modal-personal-phone" class="font-semibold text-white">...</span>
             </div>
         </div>
 
         <!-- Close Button -->
         <div class="pt-5 flex gap-2">
-            <button onclick="closeModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 py-3 rounded-xl font-bold transition text-xs">
+            <button onclick="closeModal()" class="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3 rounded-xl font-bold transition text-xs">
                 ปิดหน้าต่าง
             </button>
         </div>
@@ -391,7 +440,7 @@
 <script>
     // ** การตั้งค่าการเชื่อมต่อ API ไปยัง Google Apps Script **
     // ระบุ URL ของ Web App ที่ได้จาก Google Apps Script (ตอน Deploy เป็น Web App) ลงในตัวแปรนี้
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxvqfHX9uF1AWsTX_7jN4D08lbpPVAq3pOlMiA0z0mgsbXLoa94vekBSjEer6BMsoMq/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzn8DE5xJowtZbgnIBJENZeEvOb-R3Te8nv0KkyNoZD_4aKfdrCOUahc8sI-QCxijl_/exec";
 
     // State Variables
     let today = new Date();
@@ -528,7 +577,7 @@
         const calendarGrid = document.getElementById('calendar-grid');
 
         if (state === 'success') {
-            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600 border border-green-200';
+            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-400/20';
             statusEl.innerHTML = '<i class="fa fa-check-circle"></i> เชื่อมต่อข้อมูลสำเร็จ';
             loadingBox.style.display = 'none';
             calendarGrid.style.opacity = '1';
@@ -536,18 +585,18 @@
             renderCalendar();
         } 
         else if (state === 'db-error') {
-            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-600 border border-red-200';
+            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-300 border border-red-400/20';
             statusEl.innerHTML = '<i class="fa fa-database"></i> ข้อผิดพลาดของฐานข้อมูล';
             calendarGrid.style.opacity = '0.3';
             calendarGrid.style.pointerEvents = 'none';
-            staffList.innerHTML = `<div class="text-center py-8 text-red-500 font-bold"><i class="fa fa-exclamation-triangle block text-2xl mb-2"></i>🚨 ไม่พบหน้าชีตข้อมูลหลัก:<br><span class="text-xs font-normal text-slate-500">โปรดตรวจสอบชื่อชีต "รายชื่อพนักงาน" หรือสิทธิ์การแชร์</span></div>`;
+            staffList.innerHTML = `<div class="text-center py-8 text-red-400 font-bold"><i class="fa fa-exclamation-triangle block text-2xl mb-2"></i>🚨 ไม่พบหน้าชีตข้อมูลหลัก:<br><span class="text-xs font-normal text-blue-200">โปรดตรวจสอบชื่อชีต "รายชื่อพนักงาน" หรือสิทธิ์การแชร์</span></div>`;
         } 
         else if (state === 'offline') {
-            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200';
+            statusEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-400/20';
             statusEl.innerHTML = '<i class="fa fa-wifi"></i> เครือข่ายออฟไลน์';
             calendarGrid.style.opacity = '0.3';
             calendarGrid.style.pointerEvents = 'none';
-            staffList.innerHTML = `<div class="text-center py-8 text-amber-500 font-bold"><i class="fa fa-wifi-slash block text-2xl mb-2"></i>🚨 ขัดข้องชั่วคราว:<br><span class="text-xs font-normal text-slate-500">การเชื่อมต่อขาดหาย กำลังพยายามใหม่อีกครั้ง...</span></div>`;
+            staffList.innerHTML = `<div class="text-center py-8 text-amber-400 font-bold"><i class="fa fa-wifi-slash block text-2xl mb-2"></i>🚨 ขัดข้องชั่วคราว:<br><span class="text-xs font-normal text-blue-200">การเชื่อมต่อขาดหาย กำลังพยายามใหม่อีกครั้ง...</span></div>`;
         }
     }
 
@@ -559,7 +608,7 @@
         
         // ตรวจจับว่ารันบน Google Apps Script หรือบนภายนอก (เช่น GitHub Pages)
         if (typeof google === 'undefined' || !google.script || !google.script.run) {
-            console.log("Detecting execution environment: External (GitHub Pages)");
+            console.log("Detecting execution environment: External (GitHub Pages/Canvas)");
             
             // ใช้ Web App API เพื่อดึงข้อมูลข้ามโดเมน
             fetch(`${GAS_WEB_APP_URL}?action=getPayload`)
@@ -650,7 +699,7 @@
             
             const borderRing = isSelected 
                 ? 'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]' 
-                : 'border-transparent';
+                : 'border-white/10';
 
             item.onclick = () => {
                 selectedInsightStaffName = s.name;
@@ -659,12 +708,12 @@
             };
 
             item.innerHTML = `
-                <div class="relative w-12 h-12 rounded-full flex items-center justify-center font-bold border-2 bg-slate-100 ${borderRing} transition-all duration-200">
-                    <span class="absolute z-10 text-xs text-slate-500">${initials}</span>
+                <div class="relative w-12 h-12 rounded-full flex items-center justify-center font-bold border-2 bg-slate-800 ${borderRing} transition-all duration-200">
+                    <span class="absolute z-10 text-xs text-blue-200">${initials}</span>
                     ${imgHtml}
                 </div>
                 <span class="text-[10px] text-center truncate w-full leading-tight font-medium ${
-                    isSelected ? 'text-amber-600 font-bold' : 'text-slate-500'
+                    isSelected ? 'text-amber-400 font-bold' : 'text-blue-300'
                 }">
                     ${getFirstName(s.name)}
                 </span>
@@ -714,7 +763,7 @@
         const indImg = document.getElementById('ind-avatar-img');
         
         indInitials.innerText = staffObj.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
-        indInitials.style.color = '#888';
+        indInitials.style.color = '#fff';
 
         if (staffObj.img) {
             indImg.src = staffObj.img;
@@ -727,7 +776,7 @@
         scheduleListContainer.innerHTML = '';
 
         if (monthlyEntries.length === 0) {
-            scheduleListContainer.innerHTML = `<p class="text-[10px] text-slate-400 italic py-2 text-center">ไม่มีข้อมูลเวรปฏิบัติหน้าที่ในเดือนนี้</p>`;
+            scheduleListContainer.innerHTML = `<p class="text-[10px] text-blue-200 italic py-2 text-center">ไม่มีข้อมูลเวรปฏิบัติหน้าที่ในเดือนนี้</p>`;
         } else {
             monthlyEntries.sort((a, b) => a.date.localeCompare(b.date));
             monthlyEntries.forEach(entry => {
@@ -737,26 +786,26 @@
                 let badgeColor = '';
                 let typeLabel = '';
                 if (entry.type === 'W') {
-                    badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    badgeColor = 'bg-emerald-500/10 text-emerald-300 border-emerald-400/20';
                     typeLabel = 'เวรปกติ';
                 } else if (entry.type === 'OT') {
-                    badgeColor = 'bg-red-50 text-red-700 border-red-200';
+                    badgeColor = 'bg-red-500/10 text-red-300 border-red-400/20';
                     typeLabel = 'โอที';
                 } else if (entry.type === 'PH') {
-                    badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                    badgeColor = 'bg-amber-500/10 text-amber-300 border-amber-400/20';
                     typeLabel = 'วันเทศกาล';
                 } else if (entry.type === 'B') {
-                    badgeColor = 'bg-slate-100 text-slate-700 border-slate-300';
+                    badgeColor = 'bg-white/10 text-slate-300 border-white/20';
                     typeLabel = 'ขอวันหยุด';
                 }
 
                 const row = document.createElement('div');
-                row.className = "flex items-center justify-between text-[11px] p-2 rounded-lg bg-white border border-slate-100 shadow-sm";
+                row.className = "flex items-center justify-between text-[11px] p-2 rounded-lg bg-white/5 border border-white/10 shadow-sm";
                 row.innerHTML = `
-                    <span class="font-semibold text-slate-800">${localDateStr}</span>
+                    <span class="font-semibold text-white">${localDateStr}</span>
                     <div class="flex items-center gap-2">
                         <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                            entry.shift === 'Day' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'
+                            entry.shift === 'Day' ? 'bg-amber-500/20 text-amber-300' : 'bg-indigo-500/20 text-indigo-300'
                         }">
                             <i class="fa ${entry.shift === 'Day' ? 'fa-sun' : 'fa-moon'} text-[9px] mr-0.5"></i> ${entry.shift}
                         </span>
@@ -786,8 +835,8 @@
         const content = document.getElementById('duty-modal-content');
         
         title.innerHTML = dutyType === 'OT' 
-            ? '<i class="fa fa-business-time text-red-500"></i> รายชื่อผู้ปฏิบัติงานล่วงเวลา (OT)' 
-            : '<i class="fa fa-calendar-day text-amber-500"></i> รายชื่อผู้ปฏิบัติงานวันหยุดนักขัตฤกษ์ (PH)';
+            ? '<i class="fa fa-business-time text-red-400"></i> รายชื่อผู้ปฏิบัติงานล่วงเวลา (OT)' 
+            : '<i class="fa fa-calendar-day text-amber-400"></i> รายชื่อผู้ปฏิบัติงานวันหยุดนักขัตฤกษ์ (PH)';
 
         const year = currentDate.getFullYear();
         const monthStr = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -799,7 +848,7 @@
         content.innerHTML = '';
 
         if (list.length === 0) {
-            content.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 italic">ไม่มีพนักงานเข้าเวร ${dutyType} ในเดือนนี้</div>`;
+            content.innerHTML = `<div class="text-center py-6 text-xs text-blue-200 italic">ไม่มีพนักงานเข้าเวร ${dutyType} ในเดือนนี้</div>`;
         } else {
             list.forEach(r => {
                 const staff = appData.staff.find(s => s.name === r.name) || { name: r.name, dept: 'SKY Team', img: '', color: '#94a3b8' };
@@ -808,22 +857,22 @@
                 const initials = staff.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
                 
                 const card = document.createElement('div');
-                card.className = "flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 border border-slate-200";
+                card.className = "flex items-center justify-between p-2.5 rounded-2xl bg-white/5 border border-white/10";
                 
                 card.innerHTML = `
                     <div class="flex items-center gap-2.5">
-                        <div class="relative w-9 h-9 rounded-full flex items-center justify-center font-bold bg-white border border-slate-200 text-xs text-slate-500">
+                        <div class="relative w-9 h-9 rounded-full flex items-center justify-center font-bold bg-slate-800 border border-white/10 text-xs text-blue-200">
                             <span>${initials}</span>
                             ${staff.img ? `<img src="${staff.img}" class="absolute inset-0 w-full h-full object-cover rounded-full z-20">` : ''}
                         </div>
                         <div>
-                            <h4 class="text-xs font-bold text-slate-800">${staff.name}</h4>
-                            <p class="text-[9px] text-slate-500">${staff.dept}</p>
+                            <h4 class="text-xs font-bold text-white">${staff.name}</h4>
+                            <p class="text-[9px] text-blue-300">${staff.dept}</p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-xs font-bold text-amber-600 block">${dateLabel}</span>
-                        <span class="text-[9px] px-1 py-0.2 rounded font-bold ${r.shift === 'Day' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'}">${r.shift}</span>
+                        <span class="text-xs font-bold text-amber-400 block">${dateLabel}</span>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded font-bold ${r.shift === 'Day' ? 'bg-amber-500/20 text-amber-300' : 'bg-indigo-500/20 text-indigo-300'}">${r.shift}</span>
                     </div>
                 `;
                 content.appendChild(card);
@@ -866,6 +915,7 @@
         return false;
     }
 
+    // Connect state switcher
     function getHolidayData(day) {
         const year = currentDate.getFullYear();
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
@@ -945,21 +995,21 @@
             if (isSelected) {
                 baseStyles += "bg-amber-500 text-white selected-day ";
             } else if (isHoliday) {
-                baseStyles += "bg-amber-100 text-amber-800 ";
+                baseStyles += "bg-amber-400/20 text-amber-300 border border-amber-400/30 ";
             } else if (isBookedOff) {
-                baseStyles += "bg-slate-200 text-slate-800 ";
+                baseStyles += "bg-slate-700/50 text-slate-300 border border-slate-600/30 ";
             } else {
-                baseStyles += "bg-slate-50 hover:bg-slate-100 text-slate-700 ";
+                baseStyles += "bg-white/5 hover:bg-white/10 text-blue-200 border border-white/5 ";
             }
 
             if (isOTAlert) {
-                baseStyles += "border-red-500 ";
+                baseStyles += "border-red-500/80 ";
             }
 
             div.className = baseStyles;
             div.innerHTML = `
                 <span class="text-sm font-semibold leading-none">${i}</span>
-                ${isHoliday ? '<span class="absolute bottom-1 w-1 h-1 rounded-full bg-amber-500"></span>' : (isBookedOff ? '<span class="absolute bottom-1 w-1 h-1 rounded-full bg-slate-700"></span>' : '')}
+                ${isHoliday ? '<span class="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : (isBookedOff ? '<span class="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-slate-400"></span>' : '')}
             `;
             
             const monthStr = String(month + 1).padStart(2, '0');
@@ -1020,33 +1070,33 @@
         workingStaff.forEach(p => {
             const item = document.createElement('div');
             
-            let itemBgClass = 'bg-slate-50 border-slate-200';
+            let itemBgClass = 'bg-white/5 border-white/10 hover:bg-white/10';
             if (p.dutyType === 'OT') {
-                itemBgClass = 'bg-red-50 border-red-200';
+                itemBgClass = 'bg-red-500/10 border-red-500/20 hover:bg-red-500/15';
             } else if (p.dutyType === 'B') {
-                itemBgClass = 'bg-slate-100 border-slate-300';
+                itemBgClass = 'bg-slate-700/30 border-slate-600/30 hover:bg-slate-700/40';
             }
 
-            item.className = `staff-list-item flex items-center justify-between p-3 rounded-2xl border transition hover:shadow-md cursor-pointer ${itemBgClass}`;
+            item.className = `staff-list-item flex items-center justify-between p-3 rounded-2xl border transition hover:shadow-lg cursor-pointer ${itemBgClass}`;
             item.setAttribute('data-name', p.name);
             item.onclick = () => showModal(p);
             
             const firstChar = p.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
             
-            let shiftBadgeBg = p.shift === "Day" ? "bg-amber-100 text-amber-800" : "bg-indigo-100 text-indigo-800";
+            let shiftBadgeBg = p.shift === "Day" ? "bg-amber-500/20 text-amber-300" : "bg-indigo-500/20 text-indigo-300";
             let shiftLabel = p.shift === "Day" ? "กะเช้า (Day)" : "กะดึก (Night)";
             
-            let dutyBadgeBg = "bg-green-100 text-green-800";
+            let dutyBadgeBg = "bg-emerald-500/20 text-emerald-300";
             let dutyLabel = "ปฏิบัติงานปกติ (W)";
             
             if (p.dutyType === "PH") {
-                dutyBadgeBg = "bg-yellow-100 text-yellow-800";
+                dutyBadgeBg = "bg-yellow-500/20 text-yellow-300";
                 dutyLabel = "ทำงานวันหยุด (PH)";
             } else if (p.dutyType === "OT") {
-                dutyBadgeBg = "bg-red-100 text-red-800";
+                dutyBadgeBg = "bg-red-500/20 text-red-300";
                 dutyLabel = "ทำงานโอที (OT)";
             } else if (p.dutyType === "B") {
-                dutyBadgeBg = "bg-slate-200 text-slate-800";
+                dutyBadgeBg = "bg-slate-600/50 text-slate-300";
                 dutyLabel = "ขอวันหยุด (B)";
             }
             
@@ -1056,7 +1106,7 @@
             
             item.innerHTML = `
                 <div class="flex items-center gap-3">
-                    <div class="relative w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-bold border-2 transition bg-white border-slate-200 text-slate-500">
+                    <div class="relative w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-bold border-2 transition bg-slate-800 border-white/10 text-blue-200">
                         <span class="absolute z-10 text-xs">${firstChar}</span>
                         ${imgHtml}
                     </div>
@@ -1069,18 +1119,18 @@
                                 ${dutyLabel}
                             </span>
                         </div>
-                        <h4 class="text-xs font-bold text-slate-800">${p.name}</h4>
+                        <h4 class="text-xs font-bold text-white">${p.name}</h4>
                     </div>
                 </div>
-                <i class="fa fa-chevron-right text-[10px] text-slate-400 pr-1"></i>
+                <i class="fa fa-chevron-right text-[10px] text-blue-300 pr-1"></i>
             `;
             list.appendChild(item);
         });
         
         if (workingStaff.length === 0 && appData.roster.length > 0) {
             list.innerHTML = `
-                <div class="text-center py-12 text-slate-500">
-                    <i class="fa fa-calendar-times block text-3xl mb-2 text-slate-300"></i>
+                <div class="text-center py-12 text-blue-300">
+                    <i class="fa fa-calendar-times block text-3xl mb-2 text-blue-200/40"></i>
                     <p class="text-xs font-semibold">วันนี้ไม่มีพนักงานเข้าเวรปฏิบัติหน้าที่</p>
                 </div>
             `;
@@ -1103,9 +1153,9 @@
         const imgEl = document.getElementById('modal-avatar-img');
         const avatarContainer = document.getElementById('modal-avatar-container');
         
-        avatarContainer.style.borderColor = 'transparent';
+        avatarContainer.style.borderColor = 'rgba(255, 255, 255, 0.2)';
         initialsEl.innerText = p.name.replace("นาย", "").replace("นางสาว", "").replace("นาง", "").trim().charAt(0);
-        initialsEl.style.color = '#888'; 
+        initialsEl.style.color = '#fff'; 
         
         if (p.img) {
             imgEl.src = p.img;
@@ -1157,20 +1207,20 @@
 
             if (isWorking) {
                 if (shiftEntry.type === 'W') {
-                    div.className += "border-2 border-emerald-500 bg-emerald-50 text-emerald-800 font-bold";
+                    div.className += "border-2 border-emerald-500 bg-emerald-500/20 text-emerald-300 font-bold";
                     div.title = "เวรปกติ (Day/Night)";
                 } else if (shiftEntry.type === 'OT') {
-                    div.className += "border-2 border-red-500 bg-red-50 text-red-800 font-bold";
+                    div.className += "border-2 border-red-500 bg-red-500/20 text-red-300 font-bold";
                     div.title = "เวรล่วงเวลา (OT)";
                 } else if (shiftEntry.type === 'PH') {
-                    div.className += "border-2 border-amber-500 bg-amber-50 text-amber-800 font-bold";
+                    div.className += "border-2 border-amber-500 bg-amber-500/20 text-amber-300 font-bold";
                     div.title = "ทำงานวันเทศกาล (PH)";
                 } else if (shiftEntry.type === 'B') {
-                    div.className += "border-2 border-slate-500 bg-slate-100 text-slate-800 font-bold";
+                    div.className += "border-2 border-slate-500 bg-slate-500/20 text-slate-300 font-bold";
                     div.title = "ขอวันหยุด (B)";
                 }
             } else {
-                div.className += "text-slate-400 font-light cursor-default";
+                div.className += "text-blue-300/40 font-light cursor-default";
             }
 
             div.innerHTML = `<span>${i}</span>`;
@@ -1187,14 +1237,14 @@
         if (tabName === 'calendar') {
             tabCalendar.classList.remove('hidden');
             tabInfo.classList.add('hidden');
-            btnCalendar.className = "flex-1 pb-2 text-center text-amber-600 border-b-2 border-amber-500 transition-colors";
-            btnInfo.className = "flex-1 pb-2 text-center text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors";
+            btnCalendar.className = "flex-1 pb-2 text-center text-amber-400 border-b-2 border-amber-500 transition-colors";
+            btnInfo.className = "flex-1 pb-2 text-center text-blue-300 hover:text-white border-b-2 border-transparent transition-colors";
             if (activeModalStaff) renderModalCalendarGrid(activeModalStaff);
         } else {
             tabCalendar.classList.add('hidden');
             tabInfo.classList.remove('hidden');
-            btnCalendar.className = "flex-1 pb-2 text-center text-slate-500 hover:text-slate-700 border-b-2 border-transparent transition-colors";
-            btnInfo.className = "flex-1 pb-2 text-center text-amber-600 border-b-2 border-amber-500 transition-colors";
+            btnCalendar.className = "flex-1 pb-2 text-center text-blue-300 hover:text-white border-b-2 border-transparent transition-colors";
+            btnInfo.className = "flex-1 pb-2 text-center text-amber-400 border-b-2 border-amber-500 transition-colors";
         }
     }
 
