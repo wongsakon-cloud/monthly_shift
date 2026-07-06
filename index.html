@@ -166,10 +166,10 @@
       <!-- Calendar column -->
       <div class="lg:col-span-2 glass rounded-2xl p-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="flex items-center gap-2 w-full sm:w-auto overflow-hidden">
             <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-xs"></i></button>
-            <select id="select-month" onchange="onMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
-            <select id="select-year" onchange="onMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
+            <select id="select-month" onchange="onMonthYearSelectChange()" style="width:0;" class="flex-1 min-w-0 max-w-full bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
+            <select id="select-year" onchange="onMonthYearSelectChange()" style="width:0;" class="flex-1 min-w-0 max-w-full bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
             <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-xs"></i></button>
           </div>
           <button id="shift-toggle-btn" onclick="toggleShift()" class="flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold shadow-md transition-all">
@@ -339,8 +339,8 @@
 </div>
 
 <!-- Staff profile modal -->
-<div id="staffModal" class="hidden fixed inset-0 z-50 items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-3 overflow-y-auto">
-  <div class="glass-dark rounded-2xl w-full max-w-sm my-4 sm:my-auto max-h-[calc(100vh-2rem)] sm:max-h-[88vh] overflow-y-auto overflow-x-hidden scrollbar-none p-3.5">
+<div id="staffModal" class="hidden fixed inset-0 z-50 items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-3 overflow-y-auto overflow-x-hidden" style="touch-action: pan-y; overscroll-behavior-x: none;">
+  <div class="glass-dark rounded-2xl w-full max-w-sm my-4 sm:my-auto max-h-[calc(100vh-2rem)] sm:max-h-[88vh] overflow-y-auto overflow-x-hidden scrollbar-none p-3.5" style="touch-action: pan-y; overscroll-behavior-x: none;">
     <div class="flex items-center justify-between mb-2">
       <span class="text-[10px] text-blue-300">รหัสพนักงาน <span id="modal-id"></span></span>
       <button onclick="closeModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-xmark text-xs"></i></button>
@@ -362,10 +362,10 @@
     </div>
 
     <div id="modal-tab-calendar">
-      <div class="flex items-center gap-1.5 mb-2 w-full">
+      <div class="flex items-center gap-1.5 mb-2 w-full overflow-hidden">
         <button onclick="changeModalMonth(-1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-[10px]"></i></button>
-        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center"></select>
-        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center"></select>
+        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" style="width:0;" class="flex-1 min-w-0 max-w-full bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center"></select>
+        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" style="width:0;" class="flex-1 min-w-0 max-w-full bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center"></select>
         <button onclick="changeModalMonth(1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-[10px]"></i></button>
       </div>
       <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[9px] font-semibold text-blue-300">
