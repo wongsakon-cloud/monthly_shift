@@ -166,11 +166,11 @@
       <!-- Calendar column -->
       <div class="lg:col-span-2 glass rounded-2xl p-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div class="flex items-center gap-2">
-            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center"><i class="fa fa-chevron-left text-xs"></i></button>
-            <select id="select-month" onchange="onMonthYearSelectChange()" class="bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5"></select>
-            <select id="select-year" onchange="onMonthYearSelectChange()" class="bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5"></select>
-            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center"><i class="fa fa-chevron-right text-xs"></i></button>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-xs"></i></button>
+            <select id="select-month" onchange="onMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
+            <select id="select-year" onchange="onMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
+            <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-xs"></i></button>
           </div>
           <button id="shift-toggle-btn" onclick="toggleShift()" class="flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold shadow-md transition-all">
             <i id="shift-icon" class="fa fa-sun"></i>
@@ -340,7 +340,7 @@
 
 <!-- Staff profile modal -->
 <div id="staffModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-  <div class="glass-dark rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto scrollbar-none p-4">
+  <div class="glass-dark rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto overflow-x-hidden scrollbar-none p-4">
     <div class="flex items-center justify-between mb-3">
       <span class="text-[10px] text-blue-300">รหัสพนักงาน <span id="modal-id"></span></span>
       <button onclick="closeModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center"><i class="fa fa-xmark text-xs"></i></button>
@@ -351,9 +351,9 @@
         <span id="modal-avatar-initials" class="absolute z-10 text-2xl font-bold"></span>
         <img id="modal-avatar-img" class="absolute inset-0 w-full h-full object-cover z-20" style="display:none;">
       </div>
-      <h3 id="modal-name" class="text-base font-bold"></h3>
-      <p id="modal-en" class="text-xs text-blue-300"></p>
-      <p id="modal-dept" class="text-[10px] text-blue-400"></p>
+      <h3 id="modal-name" class="text-base font-bold break-words max-w-full"></h3>
+      <p id="modal-en" class="text-xs text-blue-300 break-words max-w-full"></p>
+      <p id="modal-dept" class="text-[10px] text-blue-400 break-words max-w-full"></p>
     </div>
 
     <div class="flex border-b border-white/10 mb-3 text-xs">
@@ -362,11 +362,11 @@
     </div>
 
     <div id="modal-tab-calendar">
-      <div class="flex items-center justify-center gap-2 mb-2">
-        <button onclick="changeModalMonth(-1)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center"><i class="fa fa-chevron-left text-[10px]"></i></button>
-        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="bg-white/10 border border-white/10 rounded-lg text-[10px] px-2 py-1"></select>
-        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="bg-white/10 border border-white/10 rounded-lg text-[10px] px-2 py-1"></select>
-        <button onclick="changeModalMonth(1)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center"><i class="fa fa-chevron-right text-[10px]"></i></button>
+      <div class="flex items-center gap-2 mb-2 w-full">
+        <button onclick="changeModalMonth(-1)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-[10px]"></i></button>
+        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-[10px] px-2 py-1 text-center"></select>
+        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-[10px] px-2 py-1 text-center"></select>
+        <button onclick="changeModalMonth(1)" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-[10px]"></i></button>
       </div>
       <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[9px] font-semibold text-blue-300">
         <div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div>
