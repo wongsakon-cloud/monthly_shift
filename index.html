@@ -30,6 +30,8 @@
     overflow-y: auto;
     min-height: 100vh;
     background: radial-gradient(circle at center bottom, #2563eb 0%, #1e3a8a 35%, #0f172a 100%);
+    background-attachment: fixed;
+    background-size: cover;
   }
   .glass { background: rgba(255,255,255,.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.12); }
   .glass-dark { background: rgba(15,23,42,.6); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.1); }
@@ -52,8 +54,51 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   /* drag-to-scroll carousels */
-  .drag-scroll { cursor: grab; }
+  .drag-scroll { cursor: grab; touch-action: pan-x; -webkit-overflow-scrolling: touch; overflow-x: auto !important; }
   .drag-scroll:active { cursor: grabbing; }
+
+  /* ===== shared "avatar frame" hover/selected style used across both pages =====
+     Whole card no longer scales (that was causing the photo to visually
+     spill outside its circular frame); instead only the border + font
+     color change, so the frame size never changes and nothing overflows. */
+  .avatar-frame {
+    transition: border-color .2s ease, box-shadow .2s ease;
+    overflow: hidden; /* guarantees the photo is always clipped to the circle */
+  }
+  .avatar-card:hover .avatar-frame,
+  .avatar-card.is-selected .avatar-frame {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 12px rgba(245,158,11,.55);
+  }
+  .avatar-card:hover .avatar-name,
+  .avatar-card.is-selected .avatar-name {
+    color: #f59e0b !important;
+    font-weight: 700;
+  }
+
+  /* leaderboard: framed employee photo, pinned to the bottom of the viewport (does not scroll) */
+  .employee-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 0;
+    pointer-events: none;
+    width: min(90vw, 380px);
+    height: 58vh;
+    border-radius: 28px 28px 0 0;
+    border: 2px solid rgba(245,158,11,.4);
+    border-bottom: none;
+    background: rgba(15,23,42,.35);
+    overflow: hidden;
+    box-shadow: 0 -16px 50px rgba(0,0,0,.35);
+  }
+  .employee-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+  }
 </style>
 </head>
 <body class="text-white">
@@ -154,7 +199,7 @@
         </div>
 
         <h4 class="text-xs font-bold mb-2 text-blue-200">ทีมงานหลักประจำเดือน</h4>
-        <div id="insight-staff-carousel" class="drag-scroll flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth py-2 px-1 mb-3"></div>
+        <div id="insight-staff-carousel" class="drag-scroll flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth py-3 px-1 mb-3"></div>
         <p class="text-[10px] text-blue-300 italic mb-3">💡 คลิกที่พนักงานด้านบนเพื่อตรวจสอบประวัติและสถิติกะเดือนนี้</p>
 
         <div id="individual-stats-card" class="glass-dark rounded-xl p-3 hidden">
@@ -220,21 +265,19 @@
 
     <div id="statusMessage" class="hidden text-xs text-red-300 bg-red-500/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4"></div>
 
-    <div class="glass rounded-2xl p-4 mb-4">
+    <!-- Daily Team Overview card — full width, expands with the screen -->
+    <div class="glass rounded-3xl p-4 sm:p-6 mb-4 w-full text-center">
       <h4 class="text-xs font-bold text-blue-200 mb-3">ทีมงานหลักประจำวัน (Daily Team Overview)</h4>
-      <div id="overviewContainer" class="drag-scroll flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth py-2 px-1"></div>
+      <div id="overviewContainer" class="drag-scroll flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth py-3 px-1"></div>
     </div>
 
-    <!-- Symmetric profile card: badge, framed photo and name are all centered together,
-         so nothing floats separately and nothing scrolls independently from the page -->
-    <div class="glass-dark rounded-3xl p-6 sm:p-8 max-w-sm mx-auto text-center">
+    <!-- Lead info card: no framed photo here anymore — the photo now sits
+         pinned to the bottom of the viewport (see #employee-photo-wrapper),
+         same as the original design. This card just shows name + tel info. -->
+    <div class="glass-dark rounded-3xl p-6 sm:p-8 max-w-sm mx-auto text-center relative z-10">
       <span id="shiftBadge" class="hidden"></span>
 
-      <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full overflow-hidden border-4 border-amber-400/70 shadow-lg bg-white/5 mt-3 mb-4">
-        <img id="profileImage" src="" alt="" class="w-full h-full object-cover object-top">
-      </div>
-
-      <h2 id="nameThDisplay" class="text-xl sm:text-2xl font-bold transition-all">-</h2>
+      <h2 id="nameThDisplay" class="text-xl sm:text-2xl font-bold transition-all mt-3">-</h2>
       <p id="nameEnDisplay" class="text-xs text-blue-300 mb-1">-</p>
       <div class="text-[11px] text-blue-300 mb-4">
         <span id="dateDisplay">-</span> &middot; <span id="timeDisplay">-</span>
@@ -253,6 +296,13 @@
     </div>
   </div>
 
+</div>
+
+<!-- Employee photo — pinned to the bottom of the viewport, outside the
+     card/frame, same as the original design. Only shown on the
+     Leaderboard view (toggled in switchMainView). -->
+<div id="employee-photo-wrapper" class="employee-wrapper hidden">
+  <img id="profileImage" src="" alt="">
 </div>
 
 <!-- ======================================================= -->
@@ -336,17 +386,20 @@ function switchMainView(view) {
   const leaderboardView = document.getElementById('view-leaderboard');
   const btnMonthly = document.getElementById('tab-btn-view-monthly');
   const btnLeaderboard = document.getElementById('tab-btn-view-leaderboard');
+  const photoWrapper = document.getElementById('employee-photo-wrapper');
 
   if (view === 'monthly') {
     monthlyView.classList.remove('hidden');
     leaderboardView.classList.add('hidden');
     btnMonthly.classList.add('active');
     btnLeaderboard.classList.remove('active');
+    if (photoWrapper) photoWrapper.classList.add('hidden');
   } else {
     monthlyView.classList.add('hidden');
     leaderboardView.classList.remove('hidden');
     btnLeaderboard.classList.add('active');
     btnMonthly.classList.remove('active');
+    if (photoWrapper) photoWrapper.classList.remove('hidden');
   }
 }
 
@@ -522,16 +575,15 @@ function renderInsightStaffCarousel() {
   appData.staff.forEach(s => {
     const isSelected = selectedInsightStaffName === s.name;
     const item = document.createElement('div');
-    item.className = `flex flex-col items-center gap-1.5 cursor-pointer transition-all duration-300 flex-shrink-0 w-14 select-none ${isSelected ? 'scale-105 opacity-100' : 'opacity-75 hover:opacity-100 hover:scale-105'}`;
+    item.className = `avatar-card flex flex-col items-center gap-1.5 cursor-pointer flex-shrink-0 w-14 select-none ${isSelected ? 'is-selected' : ''}`;
     const initials = s.name.replace("นาย","").replace("นางสาว","").replace("นาง","").trim().charAt(0);
     const imgHtml = s.img ? `<img class="absolute inset-0 w-full h-full object-cover z-20 rounded-full" src="${s.img}" alt="${s.name}">` : '';
-    const borderRing = isSelected ? 'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]' : 'border-white/10';
     item.onclick = () => { selectedInsightStaffName = s.name; renderInsightStaffCarousel(); renderIndividualStats(); };
     item.innerHTML = `
-      <div class="relative w-12 h-12 rounded-full flex items-center justify-center font-bold border-2 bg-transparent ${borderRing} transition-all duration-200">
+      <div class="avatar-frame relative w-12 h-12 rounded-full flex items-center justify-center font-bold border-2 bg-transparent border-white/10">
         <span class="absolute z-10 text-xs text-blue-200">${initials}</span>${imgHtml}
       </div>
-      <span class="text-[10px] text-center truncate w-full leading-tight font-medium ${isSelected ? 'text-amber-400 font-bold' : 'text-blue-300'}">${getFirstName(s.name)}</span>`;
+      <span class="avatar-name text-[10px] text-center truncate w-full leading-tight font-medium text-blue-300">${getFirstName(s.name)}</span>`;
     container.appendChild(item);
   });
 }
@@ -954,15 +1006,13 @@ function renderOverview() {
     const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ไม่มีเวร";
     const opacity = personData ? "opacity-100" : "opacity-50";
     const isActive = slot.key === activeTimeKey;
-    const ringClass = isActive ? "border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]" : "border-white/20 group-hover:border-amber-400/80";
-    const nameClass = isActive ? "text-amber-400 font-bold" : "text-white group-hover:text-amber-400";
     const cardHtml = `
-      <div class="group flex flex-col items-center min-w-[70px] snap-center cursor-pointer transition-transform duration-300 hover:scale-105 origin-center" onclick="selectTimeAndRender('${slot.key}')">
-        <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 ${ringClass} shadow-md ${opacity} transition-colors duration-200">
+      <div class="avatar-card ${isActive ? 'is-selected' : ''} flex flex-col items-center min-w-[70px] snap-center cursor-pointer" onclick="selectTimeAndRender('${slot.key}')">
+        <div class="avatar-frame w-[50px] h-[50px] rounded-full border-2 border-white/20 shadow-md ${opacity}">
           <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/333/666?text=NoPic'">
         </div>
         <div class="mt-2 text-[9px] text-white/80 uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded-full">${slot.label}</div>
-        <div class="text-[10px] font-medium mt-1 w-full text-center truncate px-1 transition-colors duration-200 ${nameClass}">${name}</div>
+        <div class="avatar-name text-[10px] font-medium mt-1 w-full text-center truncate px-1 text-white">${name}</div>
       </div>`;
     container.innerHTML += cardHtml;
   });
