@@ -346,15 +346,15 @@
 
 <!-- Staff profile modal -->
 <div id="staffModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 backdrop-blur-sm p-3">
-  <div class="glass-dark rounded-2xl w-full max-w-sm max-h-[92vh] overflow-y-auto overflow-x-hidden scrollbar-none p-3">
-    <div class="flex items-center justify-between mb-1.5">
+  <div class="glass-dark rounded-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto overflow-x-hidden scrollbar-none p-3 mx-auto box-border">
+    <div class="flex items-center justify-between mb-1">
       <span class="text-[10px] text-blue-300">รหัสพนักงาน <span id="modal-id"></span></span>
       <button onclick="closeModal()" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-xmark text-xs"></i></button>
     </div>
 
-    <div class="flex flex-col items-center text-center mb-2">
-      <div id="modal-avatar-container" class="relative w-14 h-14 rounded-full overflow-hidden flex items-center justify-center border-2 bg-transparent mb-1">
-        <span id="modal-avatar-initials" class="absolute z-10 text-lg font-bold"></span>
+    <div class="flex flex-col items-center text-center mb-1.5">
+      <div id="modal-avatar-container" class="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center border-2 bg-transparent mb-1">
+        <span id="modal-avatar-initials" class="absolute z-10 text-base font-bold"></span>
         <img id="modal-avatar-img" class="absolute inset-0 w-full h-full object-cover z-20" style="display:none;">
       </div>
       <h3 id="modal-name" class="text-sm font-bold break-words max-w-full leading-tight"></h3>
@@ -362,13 +362,13 @@
       <p id="modal-dept" class="text-[9px] text-blue-400 break-words max-w-full leading-tight"></p>
     </div>
 
-    <div class="flex border-b border-white/10 mb-1.5 text-xs">
+    <div class="flex border-b border-white/10 mb-1 text-xs">
       <button id="tab-btn-calendar" onclick="setModalTab('calendar')" class="flex-1 pb-1.5 text-center text-amber-400 border-b-2 border-amber-500 transition-colors">ปฏิทินปฏิบัติงาน</button>
       <button id="tab-btn-info" onclick="setModalTab('info')" class="flex-1 pb-1.5 text-center text-blue-300 hover:text-white border-b-2 border-transparent transition-colors">ประวัติส่วนตัว</button>
     </div>
 
     <div id="modal-tab-calendar">
-      <div class="flex items-center gap-1.5 mb-1.5 w-full min-w-0">
+      <div class="flex items-center gap-1 mb-1 w-full min-w-0">
         <button onclick="changeModalMonth(-1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-[10px]"></i></button>
         <div class="relative flex-1 min-w-0 basis-0">
           <div id="modal-select-month-label" class="bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center truncate">...</div>
@@ -380,11 +380,11 @@
         </div>
         <button onclick="changeModalMonth(1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-[10px]"></i></button>
       </div>
-      <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[9px] font-semibold text-blue-300">
+      <div class="grid grid-cols-7 gap-0.5 mb-0.5 text-center text-[9px] font-semibold text-blue-300">
         <div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div>
       </div>
-      <div id="modal-calendar-grid" class="grid grid-cols-7 gap-1 mb-1.5"></div>
-      <div class="flex flex-wrap gap-x-2 gap-y-1 text-[9px] text-blue-300">
+      <div id="modal-calendar-grid" class="grid grid-cols-7 gap-y-0.5 gap-x-0 mb-1 place-items-center"></div>
+      <div class="flex flex-wrap gap-x-1.5 gap-y-0.5 text-[9px] text-blue-300">
         <span><span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>ปกติ (W)</span>
         <span><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>โอที (OT)</span>
         <span><span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1"></span>นักขัตฯ (PH)</span>
@@ -935,13 +935,13 @@ function renderModalCalendarGrid(p) {
   syncDropdowns();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  for (let i = 0; i < firstDayOfWeek; i++) { const emptyCell = document.createElement('div'); emptyCell.className = "h-8"; grid.appendChild(emptyCell); }
+  for (let i = 0; i < firstDayOfWeek; i++) { const emptyCell = document.createElement('div'); emptyCell.className = "h-6 w-6"; grid.appendChild(emptyCell); }
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = formatDateString(year, monthStr, i);
     const shiftEntry = appData.roster.find(r => r.date === dateStr && r.name === p.name);
     const isWorking = !!shiftEntry;
     const div = document.createElement('div');
-    div.className = "h-6 w-6 mx-auto flex items-center justify-center rounded-full text-[9px] font-semibold transition-all ";
+    div.className = "box-border h-6 w-6 flex items-center justify-center rounded-full text-[9px] font-semibold leading-none transition-all ";
     if (isWorking) {
       if (shiftEntry.type === 'W') { div.className += "border-2 border-emerald-500 bg-emerald-500/20 text-emerald-300 font-bold"; div.title = "เวรปกติ (Day/Night)"; }
       else if (shiftEntry.type === 'OT') { div.className += "border-2 border-red-500 bg-red-500/20 text-red-300 font-bold"; div.title = "เวรล่วงเวลา (OT)"; }
