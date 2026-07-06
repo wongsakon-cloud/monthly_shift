@@ -51,9 +51,9 @@
   .view-page { animation: fadeIn .35s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* leaderboard specific */
-  .employee-wrapper { position: fixed; bottom: 0; left: 0; width: 100%; height: 55vh; display: flex; justify-content: center; align-items: flex-end; pointer-events: none; z-index: 1; }
-  .employee-wrapper img { height: 70%; max-height: 80vh; object-fit: contain; object-position: bottom; transition: all .5s ease-in-out; }
+  /* drag-to-scroll carousels */
+  .drag-scroll { cursor: grab; }
+  .drag-scroll:active { cursor: grabbing; }
 </style>
 </head>
 <body class="text-white">
@@ -154,7 +154,7 @@
         </div>
 
         <h4 class="text-xs font-bold mb-2 text-blue-200">ทีมงานหลักประจำเดือน</h4>
-        <div id="insight-staff-carousel" class="flex gap-3 overflow-x-auto scrollbar-none pb-2 mb-3"></div>
+        <div id="insight-staff-carousel" class="drag-scroll flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory scroll-smooth py-2 px-1 mb-3"></div>
         <p class="text-[10px] text-blue-300 italic mb-3">💡 คลิกที่พนักงานด้านบนเพื่อตรวจสอบประวัติและสถิติกะเดือนนี้</p>
 
         <div id="individual-stats-card" class="glass-dark rounded-xl p-3 hidden">
@@ -193,59 +193,61 @@
   <!-- ================  VIEW: LEADERBOARD  =================== -->
   <!-- ======================================================= -->
   <div id="view-leaderboard" class="view-page hidden">
-    <div class="employee-wrapper">
-      <img id="profileImage" src="" alt="">
+    <h1 class="text-lg sm:text-2xl font-bold mb-1">Leaderboard</h1>
+    <p class="text-[11px] sm:text-xs text-blue-200 mb-4">SKY UBP Lead. — ทีมงานหลักประจำวัน (Daily Team Overview)</p>
+
+    <div class="glass rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-end">
+      <div class="flex-1">
+        <label class="text-[10px] text-blue-300 block mb-1">เลือกวันที่ (Date)</label>
+        <input type="date" id="dateInput" onchange="fetchLeadData()" class="w-full bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2">
+      </div>
+      <div class="flex-1">
+        <label class="text-[10px] text-blue-300 block mb-1">เลือกช่วงเวลา (Shift)</label>
+        <select id="timeInput" onchange="renderOverview(); renderMainCard();" class="w-full bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2">
+          <option value="05:30-09:30">05:30 - 09:30</option>
+          <option value="09:00-09:30">09:00 - 09:30</option>
+          <option value="09:30-12:00">09:30 - 12:00</option>
+          <option value="12:00-13:00">12:00 - 13:00</option>
+          <option value="13:00-14:30">13:00 - 14:30</option>
+          <option value="14:30-17:30">14:30 - 17:30</option>
+          <option value="17:30-21:00">17:30 - 21:00</option>
+        </select>
+      </div>
+      <button onclick="fetchLeadData()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-md transition-all">
+        <i class="fa fa-magnifying-glass mr-1"></i> ค้นหา
+      </button>
     </div>
 
-    <div class="relative z-10">
-      <h1 class="text-lg sm:text-2xl font-bold mb-1">Leaderboard</h1>
-      <p class="text-[11px] sm:text-xs text-blue-200 mb-4">SKY UBP Lead. — ทีมงานหลักประจำวัน (Daily Team Overview)</p>
+    <div id="statusMessage" class="hidden text-xs text-red-300 bg-red-500/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4"></div>
 
-      <div class="glass rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-end">
-        <div class="flex-1">
-          <label class="text-[10px] text-blue-300 block mb-1">เลือกวันที่ (Date)</label>
-          <input type="date" id="dateInput" onchange="fetchLeadData()" class="w-full bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2">
-        </div>
-        <div class="flex-1">
-          <label class="text-[10px] text-blue-300 block mb-1">เลือกช่วงเวลา (Shift)</label>
-          <select id="timeInput" onchange="renderMainCard()" class="w-full bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2">
-            <option value="05:30-09:30">05:30 - 09:30</option>
-            <option value="09:00-09:30">09:00 - 09:30</option>
-            <option value="09:30-12:00">09:30 - 12:00</option>
-            <option value="12:00-13:00">12:00 - 13:00</option>
-            <option value="13:00-14:30">13:00 - 14:30</option>
-            <option value="14:30-17:30">14:30 - 17:30</option>
-            <option value="17:30-21:00">17:30 - 21:00</option>
-          </select>
-        </div>
-        <button onclick="fetchLeadData()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-md transition-all">
-          <i class="fa fa-magnifying-glass mr-1"></i> ค้นหา
-        </button>
+    <div class="glass rounded-2xl p-4 mb-4">
+      <h4 class="text-xs font-bold text-blue-200 mb-3">ทีมงานหลักประจำวัน (Daily Team Overview)</h4>
+      <div id="overviewContainer" class="drag-scroll flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth py-2 px-1"></div>
+    </div>
+
+    <!-- Symmetric profile card: badge, framed photo and name are all centered together,
+         so nothing floats separately and nothing scrolls independently from the page -->
+    <div class="glass-dark rounded-3xl p-6 sm:p-8 max-w-sm mx-auto text-center">
+      <span id="shiftBadge" class="hidden"></span>
+
+      <div class="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded-full overflow-hidden border-4 border-amber-400/70 shadow-lg bg-white/5 mt-3 mb-4">
+        <img id="profileImage" src="" alt="" class="w-full h-full object-cover object-top">
       </div>
 
-      <div id="statusMessage" class="hidden text-xs text-red-300 bg-red-500/10 border border-red-400/20 rounded-lg px-3 py-2 mb-4"></div>
-
-      <div class="glass rounded-2xl p-4 mb-4">
-        <h4 class="text-xs font-bold text-blue-200 mb-3">ทีมงานหลักประจำวัน (Daily Team Overview)</h4>
-        <div id="overviewContainer" class="flex gap-4 overflow-x-auto hide-scrollbar pb-2 snap-x"></div>
+      <h2 id="nameThDisplay" class="text-xl sm:text-2xl font-bold transition-all">-</h2>
+      <p id="nameEnDisplay" class="text-xs text-blue-300 mb-1">-</p>
+      <div class="text-[11px] text-blue-300 mb-4">
+        <span id="dateDisplay">-</span> &middot; <span id="timeDisplay">-</span>
       </div>
 
-      <div class="glass-dark rounded-2xl p-6 max-w-md mx-auto text-center">
-        <span id="shiftBadge" class="hidden"></span>
-        <div class="text-[11px] text-blue-300">
-          <span id="dateDisplay">-</span> &middot; <span id="timeDisplay">-</span>
+      <div class="grid grid-cols-2 gap-3 text-left text-xs">
+        <div class="glass rounded-xl p-3">
+          <div class="text-[9px] text-blue-300 mb-0.5">Team Tel</div>
+          <div id="teamTelDisplay" class="font-semibold">-</div>
         </div>
-        <h2 id="nameThDisplay" class="text-2xl font-bold mt-1 transition-all">-</h2>
-        <p id="nameEnDisplay" class="text-xs text-blue-300 mb-4">-</p>
-        <div class="grid grid-cols-2 gap-3 text-left text-xs">
-          <div class="glass rounded-xl p-2.5">
-            <div class="text-[9px] text-blue-300">Team Tel</div>
-            <div id="teamTelDisplay" class="font-semibold">-</div>
-          </div>
-          <div class="glass rounded-xl p-2.5">
-            <div class="text-[9px] text-blue-300">Personal Tel</div>
-            <div id="personalTelDisplay" class="font-semibold">-</div>
-          </div>
+        <div class="glass rounded-xl p-3">
+          <div class="text-[9px] text-blue-300 mb-0.5">Personal Tel</div>
+          <div id="personalTelDisplay" class="font-semibold">-</div>
         </div>
       </div>
     </div>
@@ -945,18 +947,22 @@ function renderOverview() {
     container.innerHTML = "<div class='text-white/50 text-xs w-full text-center py-4'>ไม่พบข้อมูลตารางเวรในวันที่เลือก</div>";
     return;
   }
+  const activeTimeKey = (document.getElementById('timeInput').value || '').replace(/\s+/g, '');
   overviewSlots.forEach(slot => {
     const personData = currentDailyData[slot.key];
     const imgUrl = personData && personData.imageUrl ? personData.imageUrl : "https://placehold.co/100x100/333/666?text=ว่าง";
     const name = personData && personData.nameTh ? personData.nameTh.split(' ')[0] : "ไม่มีเวร";
     const opacity = personData ? "opacity-100" : "opacity-50";
+    const isActive = slot.key === activeTimeKey;
+    const ringClass = isActive ? "border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.5)]" : "border-white/20 group-hover:border-amber-400/80";
+    const nameClass = isActive ? "text-amber-400 font-bold" : "text-white group-hover:text-amber-400";
     const cardHtml = `
-      <div class="flex flex-col items-center min-w-[70px] snap-center cursor-pointer hover:scale-105 transition-transform origin-center transform-gpu" onclick="selectTimeAndRender('${slot.key}')">
-        <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 border-white/20 shadow-md ${opacity}">
+      <div class="group flex flex-col items-center min-w-[70px] snap-center cursor-pointer transition-transform duration-300 hover:scale-105 origin-center" onclick="selectTimeAndRender('${slot.key}')">
+        <div class="w-[50px] h-[50px] rounded-full overflow-hidden border-2 ${ringClass} shadow-md ${opacity} transition-colors duration-200">
           <img src="${imgUrl}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/333/666?text=NoPic'">
         </div>
         <div class="mt-2 text-[9px] text-white/80 uppercase tracking-wider bg-black/30 px-2 py-0.5 rounded-full">${slot.label}</div>
-        <div class="text-[10px] text-white font-medium mt-1 w-full text-center truncate px-1">${name}</div>
+        <div class="text-[10px] font-medium mt-1 w-full text-center truncate px-1 transition-colors duration-200 ${nameClass}">${name}</div>
       </div>`;
     container.innerHTML += cardHtml;
   });
@@ -964,6 +970,7 @@ function renderOverview() {
 
 function selectTimeAndRender(timeKey) {
   document.getElementById('timeInput').value = timeKey;
+  renderOverview();
   renderMainCard();
 }
 
@@ -1009,6 +1016,29 @@ function renderMainCard() {
 }
 
 /***********************************************************************
+ * Drag-to-scroll for horizontal carousels (mouse). Touch devices already
+ * scroll these natively, this just adds the same convenience for desktop.
+ ***********************************************************************/
+function enableDragScroll(el) {
+  if (!el) return;
+  let isDown = false, startX = 0, startScroll = 0, moved = false;
+  el.addEventListener('mousedown', (e) => {
+    isDown = true; moved = false;
+    startX = e.pageX; startScroll = el.scrollLeft;
+  });
+  window.addEventListener('mouseup', () => { isDown = false; });
+  el.addEventListener('mouseleave', () => { isDown = false; });
+  el.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    const dx = e.pageX - startX;
+    if (Math.abs(dx) > 3) moved = true;
+    el.scrollLeft = startScroll - dx;
+  });
+  // Prevent the drag from also firing a click on the avatar underneath
+  el.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+}
+
+/***********************************************************************
  * Bootstrapping — initialize both views on load, refresh leaderboard every 5 min
  ***********************************************************************/
 initData();
@@ -1016,6 +1046,8 @@ setDefaultDate();
 autoSelectShift();
 fetchLeadData();
 setInterval(function() { autoSelectShift(); fetchLeadData(); }, 300000);
+enableDragScroll(document.getElementById('insight-staff-carousel'));
+enableDragScroll(document.getElementById('overviewContainer'));
 </script>
 </body>
 </html>
