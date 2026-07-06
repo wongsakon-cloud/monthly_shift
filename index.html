@@ -166,10 +166,16 @@
       <!-- Calendar column -->
       <div class="lg:col-span-2 glass rounded-2xl p-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="flex items-center gap-2 w-full sm:w-auto min-w-0">
             <button onclick="changeMonth(-1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-xs"></i></button>
-            <select id="select-month" onchange="onMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
-            <select id="select-year" onchange="onMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center"></select>
+            <div class="relative flex-1 min-w-0 basis-0">
+              <div id="select-month-label" class="bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center truncate">...</div>
+              <select id="select-month" onchange="onMonthYearSelectChange()" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></select>
+            </div>
+            <div class="relative flex-1 min-w-0 basis-0">
+              <div id="select-year-label" class="bg-white/10 border border-white/10 rounded-lg text-xs px-2 py-1.5 text-center truncate">...</div>
+              <select id="select-year" onchange="onMonthYearSelectChange()" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></select>
+            </div>
             <button onclick="changeMonth(1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-xs"></i></button>
           </div>
           <button id="shift-toggle-btn" onclick="toggleShift()" class="flex items-center justify-center gap-2 w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 sm:px-3.5 sm:py-1.5 rounded-xl text-xs font-bold shadow-md transition-all">
@@ -362,10 +368,16 @@
     </div>
 
     <div id="modal-tab-calendar">
-      <div class="flex items-center gap-1.5 mb-1.5 w-full">
+      <div class="flex items-center gap-1.5 mb-1.5 w-full min-w-0">
         <button onclick="changeModalMonth(-1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-left text-[10px]"></i></button>
-        <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center"></select>
-        <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="flex-1 min-w-0 bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center"></select>
+        <div class="relative flex-1 min-w-0 basis-0">
+          <div id="modal-select-month-label" class="bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center truncate">...</div>
+          <select id="modal-select-month" onchange="onModalMonthYearSelectChange()" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></select>
+        </div>
+        <div class="relative flex-1 min-w-0 basis-0">
+          <div id="modal-select-year-label" class="bg-white/10 border border-white/10 rounded-lg text-[10px] px-1.5 py-1 text-center truncate">...</div>
+          <select id="modal-select-year" onchange="onModalMonthYearSelectChange()" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></select>
+        </div>
         <button onclick="changeModalMonth(1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-chevron-right text-[10px]"></i></button>
       </div>
       <div class="grid grid-cols-7 gap-1 mb-1 text-center text-[9px] font-semibold text-blue-300">
@@ -494,6 +506,17 @@ function syncDropdowns() {
   if (selectYear) selectYear.value = y;
   if (modalSelectMonth) modalSelectMonth.value = m;
   if (modalSelectYear) modalSelectYear.value = y;
+
+  const monthLabel = thaiMonths[m];
+  const yearLabel = `พ.ศ. ${y + 543}`;
+  const selectMonthLabel = document.getElementById('select-month-label');
+  const selectYearLabel = document.getElementById('select-year-label');
+  const modalSelectMonthLabel = document.getElementById('modal-select-month-label');
+  const modalSelectYearLabel = document.getElementById('modal-select-year-label');
+  if (selectMonthLabel) selectMonthLabel.innerText = monthLabel;
+  if (selectYearLabel) selectYearLabel.innerText = yearLabel;
+  if (modalSelectMonthLabel) modalSelectMonthLabel.innerText = monthLabel;
+  if (modalSelectYearLabel) modalSelectYearLabel.innerText = yearLabel;
 }
 
 function onMonthYearSelectChange() {
