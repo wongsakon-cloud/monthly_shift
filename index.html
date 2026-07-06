@@ -76,7 +76,8 @@
     font-weight: 700;
   }
 
-  /* leaderboard: framed employee photo, pinned to the bottom of the viewport (does not scroll) */
+  /* leaderboard: employee photo pinned to the bottom of the viewport,
+     no frame/box around it — just the photo sitting on the page background */
   .employee-wrapper {
     position: fixed;
     bottom: 0;
@@ -86,12 +87,6 @@
     pointer-events: none;
     width: min(90vw, 380px);
     height: 58vh;
-    border-radius: 28px 28px 0 0;
-    border: 2px solid rgba(245,158,11,.4);
-    border-bottom: none;
-    background: rgba(15,23,42,.35);
-    overflow: hidden;
-    box-shadow: 0 -16px 50px rgba(0,0,0,.35);
   }
   .employee-wrapper img {
     width: 100%;
@@ -268,29 +263,32 @@
     <!-- Daily Team Overview card — full width, expands with the screen -->
     <div class="glass rounded-3xl p-4 sm:p-6 mb-4 w-full text-center">
       <h4 class="text-xs font-bold text-blue-200 mb-3">ทีมงานหลักประจำวัน (Daily Team Overview)</h4>
-      <div id="overviewContainer" class="drag-scroll flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth py-3 px-1"></div>
+      <div id="overviewContainer" class="drag-scroll flex flex-wrap gap-4 justify-center overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth py-3 px-1"></div>
     </div>
 
-    <!-- Lead info card: no framed photo here anymore — the photo now sits
-         pinned to the bottom of the viewport (see #employee-photo-wrapper),
-         same as the original design. This card just shows name + tel info. -->
-    <div class="glass-dark rounded-3xl p-6 sm:p-8 max-w-sm mx-auto text-center relative z-10">
-      <span id="shiftBadge" class="hidden"></span>
-
-      <h2 id="nameThDisplay" class="text-xl sm:text-2xl font-bold transition-all mt-3">-</h2>
-      <p id="nameEnDisplay" class="text-xs text-blue-300 mb-1">-</p>
-      <div class="text-[11px] text-blue-300 mb-4">
-        <span id="dateDisplay">-</span> &middot; <span id="timeDisplay">-</span>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 text-left text-xs">
-        <div class="glass rounded-xl p-3">
-          <div class="text-[9px] text-blue-300 mb-0.5">Team Tel</div>
-          <div id="teamTelDisplay" class="font-semibold">-</div>
+    <!-- Lead info card: redesigned to a full-width split layout (name/badge on
+         one side, tel info on the other) now that it's not a narrow centered
+         card with a photo — the photo lives in the fixed bottom wrapper. -->
+    <div class="glass-dark rounded-3xl p-6 sm:p-8 w-full text-center sm:text-left relative z-10">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div>
+          <span id="shiftBadge" class="hidden"></span>
+          <h2 id="nameThDisplay" class="text-xl sm:text-2xl font-bold transition-all mt-3 sm:mt-2">-</h2>
+          <p id="nameEnDisplay" class="text-xs text-blue-300 mb-1">-</p>
+          <div class="text-[11px] text-blue-300">
+            <span id="dateDisplay">-</span> &middot; <span id="timeDisplay">-</span>
+          </div>
         </div>
-        <div class="glass rounded-xl p-3">
-          <div class="text-[9px] text-blue-300 mb-0.5">Personal Tel</div>
-          <div id="personalTelDisplay" class="font-semibold">-</div>
+
+        <div class="grid grid-cols-2 gap-3 text-left text-xs w-full sm:w-auto sm:min-w-[280px]">
+          <div class="glass rounded-xl p-3">
+            <div class="text-[9px] text-blue-300 mb-0.5">Team Tel</div>
+            <div id="teamTelDisplay" class="font-semibold">-</div>
+          </div>
+          <div class="glass rounded-xl p-3">
+            <div class="text-[9px] text-blue-300 mb-0.5">Personal Tel</div>
+            <div id="personalTelDisplay" class="font-semibold">-</div>
+          </div>
         </div>
       </div>
     </div>
