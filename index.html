@@ -72,25 +72,27 @@
     66%      { transform: translate(-2%, 2%) scale(1.03); }
   }
   .glow {
-    position: absolute;
+    position: fixed;
     width: 400px;
     height: 400px;
     bottom: -100px;
     border-radius: 50%;
-    background: rgba(59,130,246,.25);
+    background: rgba(59,130,246,.35);
     filter: blur(80px);
     z-index: -1;
     pointer-events: none;
-    animation: glowFloat 14s ease-in-out infinite;
+    animation: glowFloat 9s ease-in-out infinite;
   }
-  .glow:nth-of-type(2) { animation-name: glowFloat2; animation-duration: 17s; }
+  .glow:nth-of-type(2) { animation-name: glowFloat2; animation-duration: 11s; background: rgba(245,158,11,.28); }
   @keyframes glowFloat {
-    0%, 100% { transform: translate(0, 0) scale(1); opacity: .8; }
-    50%      { transform: translate(6%, -12%) scale(1.2); opacity: 1; }
+    0%   { transform: translate(0, 0) scale(1); opacity: .55; }
+    50%  { transform: translate(18%, -22%) scale(1.35); opacity: 1; }
+    100% { transform: translate(0, 0) scale(1); opacity: .55; }
   }
   @keyframes glowFloat2 {
-    0%, 100% { transform: translate(0, 0) scale(1); opacity: .8; }
-    50%      { transform: translate(-8%, -8%) scale(1.15); opacity: 1; }
+    0%   { transform: translate(0, 0) scale(1); opacity: .55; }
+    50%  { transform: translate(-20%, -18%) scale(1.3); opacity: 1; }
+    100% { transform: translate(0, 0) scale(1); opacity: .55; }
   }
   select option { background-color: #1e3a8a; color: white; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
