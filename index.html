@@ -114,6 +114,34 @@
       height: 66.7vh;
     }
   }
+
+  /* ===== Staff profile modal =====
+     On phones it behaves like a true bottom sheet: flush with the
+     screen's left/right/bottom edges (no floating margins), so it
+     actually fills the screen instead of looking like a small card
+     stranded in empty space. On tablets/desktop (>=640px) it reverts
+     to a normal centered dialog. dvh (with a vh fallback for older
+     browsers) is used because many mobile in-app browsers (Line,
+     Messenger, etc.) miscalculate 100vh against their address bar,
+     which is what made the sheet look like it didn't fit the screen. */
+  .staff-modal-overlay { align-items: flex-end; padding: 0; }
+  @media (min-width: 640px) {
+    .staff-modal-overlay { align-items: center; padding: 0.75rem; }
+  }
+  .staff-modal-card {
+    width: 100%;
+    max-width: 26rem;
+    max-height: 94vh;
+    max-height: 94dvh;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+  @media (min-width: 640px) {
+    .staff-modal-card {
+      max-height: 88vh;
+      max-height: 88dvh;
+      border-radius: 1rem;
+    }
+  }
 </style>
 </head>
 <body class="text-white">
@@ -345,8 +373,8 @@
 </div>
 
 <!-- Staff profile modal -->
-<div id="staffModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/60 backdrop-blur-sm p-3">
-  <div class="glass-dark rounded-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto overflow-x-hidden scrollbar-none p-3 mx-auto box-border">
+<div id="staffModal" class="staff-modal-overlay hidden fixed inset-0 z-50 justify-center bg-black/60 backdrop-blur-sm">
+  <div class="staff-modal-card glass-dark overflow-y-auto overflow-x-hidden scrollbar-none p-4 box-border">
     <div class="flex items-center justify-between mb-1">
       <span class="text-[10px] text-blue-300">รหัสพนักงาน <span id="modal-id"></span></span>
       <button onclick="closeModal()" class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0"><i class="fa fa-xmark text-xs"></i></button>
