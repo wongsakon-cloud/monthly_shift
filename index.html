@@ -55,9 +55,16 @@
   .scrollbar-none, .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .selected-day { box-shadow: 0 0 16px rgba(245,158,11,.6); border: 2px solid #f59e0b !important; }
   .day-box { transition: all .2s cubic-bezier(.4,0,.2,1); }
-  .glow { position: absolute; width: 400px; height: 400px; bottom: -100px; border-radius: 50%; background: rgba(59,130,246,.25); filter: blur(80px); z-index: -1; pointer-events: none; }
+  .glow { position: absolute; width: 400px; max-width: 55vw; height: 400px; bottom: -100px; border-radius: 50%; background: rgba(59,130,246,.25); filter: blur(80px); z-index: -1; pointer-events: none; }
+  @media (max-width: 480px) {
+    .glow { width: 200px; height: 200px; max-width: 60vw; }
+  }
   select option { background-color: #1e3a8a; color: white; }
   input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+  /* iOS/Android WebKit gives <input type=date> and <select> an internal
+     minimum content width that ignores flex-shrink unless min-width is
+     forced to 0 on the control itself (not just its wrapper). */
+  input, select, textarea, button { min-width: 0; }
 
   /* tab switcher */
   .main-tab-btn { transition: all .25s ease; }
@@ -121,7 +128,7 @@
 <div class="glow" style="left:5%"></div>
 <div class="glow" style="right:5%"></div>
 
-<div class="relative z-10 max-w-5xl mx-auto px-4 py-5">
+<div class="relative z-10 max-w-5xl mx-auto px-4 py-5 overflow-x-hidden">
 
   <!-- ===== Global Header ===== -->
   <div class="glass rounded-2xl px-4 py-3 mb-4 flex items-center justify-between">
@@ -262,14 +269,14 @@
     <h1 class="text-lg sm:text-2xl font-bold mb-1">Leaderboard</h1>
     <p class="text-[11px] sm:text-xs text-blue-200 mb-4">SKY UBP Lead. — ทีมงานหลักประจำวัน (Daily Team Overview)</p>
 
-    <div class="glass rounded-2xl p-4 mb-4 flex flex-col sm:flex-row gap-3 sm:items-end">
-      <div class="flex-1 min-w-0">
+    <div class="glass rounded-2xl p-4 mb-4 flex flex-col md:flex-row flex-wrap gap-3 md:items-end">
+      <div class="flex-1 min-w-[140px] basis-full sm:basis-[45%] md:basis-0">
         <label class="text-[10px] text-blue-300 block mb-1">เลือกวันที่ (Date)</label>
-        <input type="date" id="dateInput" onchange="fetchLeadData()" class="w-full min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2">
+        <input type="date" id="dateInput" onchange="fetchLeadData()" class="w-full min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2 box-border">
       </div>
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-[140px] basis-full sm:basis-[45%] md:basis-0">
         <label class="text-[10px] text-blue-300 block mb-1">เลือกช่วงเวลา (Shift)</label>
-        <select id="timeInput" onchange="renderOverview(); renderMainCard();" class="w-full min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2">
+        <select id="timeInput" onchange="renderOverview(); renderMainCard();" class="w-full min-w-0 bg-white/10 border border-white/10 rounded-lg text-xs px-3 py-2 box-border">
           <option value="05:30-09:30">05:30 - 09:30</option>
           <option value="09:00-09:30">09:00 - 09:30</option>
           <option value="09:30-12:00">09:30 - 12:00</option>
@@ -279,7 +286,7 @@
           <option value="17:30-21:00">17:30 - 21:00</option>
         </select>
       </div>
-      <button onclick="fetchLeadData()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-md transition-all">
+      <button onclick="fetchLeadData()" class="flex-shrink-0 basis-full md:basis-auto bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-5 py-2 rounded-lg shadow-md transition-all">
         <i class="fa fa-magnifying-glass mr-1"></i> ค้นหา
       </button>
     </div>
